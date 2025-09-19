@@ -1,14 +1,20 @@
 from database.connection import Database
 from datetime import datetime,date 
 import sqlite3
+from models.sale import Sale
 
 class SalesService:
     def __init__(self,db_instance):
         self.db = db_instance
 
-    def create_sale(self, doc, amount, user):
+    def create_sale(self, doc, amount, user,sale_date=None):
         try:
-            new_timestamp = datetime.now().isoformat()
+            if sale_date:
+                new_timestamp = datetime.combine(sale_date, datetime.now().time()).isoformat()
+            else:
+                new_timestamp = datetime.now().isoformat()
+
+                
             new_sale = """ 
             INSERT INTO sales (doc, amount, timestamp, user_id)
             VALUES (?, ?, ?, ?)

@@ -26,11 +26,11 @@ class MainApp(tk.Tk):
         self.show_login_window()  
          
     def show_login_window(self):
-        log_win = LoginWindow(auth_service = self.auth_service, on_login_success = self.on_login_succes)
+        log_win = LoginWindow(auth_service = self.auth_service, on_login_success = self.on_login_success)
         log_win.mainloop()
 
 
-    def on_login_succes(self,user):
+    def on_login_success(self,user):
         self.user = user
         self.show_dashboard_window()
 

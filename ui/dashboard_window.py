@@ -5,7 +5,10 @@ from models.sale import Sale
 from models.offer import Offer
 from models.offer_pos import Offer_pos
 import csv
-from tkcalendar import DateEntry  # For date selection
+from tkcalendar import DateEntry
+from ui.offer_window import OfferDetailWindow
+from services.get_client_data import ClientData
+
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
@@ -17,7 +20,7 @@ class DashboardWindow(ctk.CTk):
         self.sales_service = sales_service
         self.offer_service = offer_service
         
-        # Simplified color palette (black, white, and one highlight color)
+      
         self.colors = {
             'primary': '#ffffff',      # White background
             'secondary': '#000000',    # Black text and borders
@@ -33,7 +36,7 @@ class DashboardWindow(ctk.CTk):
         self.start_date = None
         self.end_date = None
         self.current_offer_positions = []
-        self.saved_offers = []  # Store saved offers
+        self.saved_offers = []
         
         self.title(f"Sales & Offers Dashboard - {user.username}")
         self.geometry("1600x1000")
@@ -44,13 +47,11 @@ class DashboardWindow(ctk.CTk):
         self.load_saved_offers()
         
     def create_widgets(self):
-        # Main container
         main_container = ctk.CTkFrame(self, fg_color="transparent")
         main_container.pack(fill="both", expand=True, padx=20, pady=20)
         
         self.create_header(main_container)
         
-        # Notebook for tabs
         self.notebook = ctk.CTkTabview(
             main_container,
             fg_color=self.colors['primary'],
@@ -62,7 +63,6 @@ class DashboardWindow(ctk.CTk):
         )
         self.notebook.pack(fill="both", expand=True, pady=(15, 0))
         
-        # Create tabs
         self.sales_tab = self.notebook.add("Sales Management")
         self.offers_tab = self.notebook.add("Offers Management")
         
@@ -70,7 +70,6 @@ class DashboardWindow(ctk.CTk):
         self.setup_offers_tab()
         
     def create_header(self, parent):
-        # Header frame with user info
         header_frame = ctk.CTkFrame(
             parent, 
             height=70, 
@@ -80,7 +79,6 @@ class DashboardWindow(ctk.CTk):
         header_frame.pack(fill="x", pady=(0, 15))
         header_frame.pack_propagate(False)
         
-        # Left side with user info
         left_info = ctk.CTkFrame(header_frame, fg_color="transparent")
         left_info.pack(side="left", fill="y", padx=25, pady=15)
         
@@ -100,7 +98,6 @@ class DashboardWindow(ctk.CTk):
         )
         role_info.pack(anchor="w", pady=(2, 0))
         
-        # Right side with date info
         right_info = ctk.CTkFrame(header_frame, fg_color="transparent")
         right_info.pack(side="right", fill="y", padx=25, pady=15)
         
@@ -113,7 +110,6 @@ class DashboardWindow(ctk.CTk):
         date_label.pack(anchor="e")
         
     def setup_sales_tab(self):
-        # Sales tab container
         sales_container = ctk.CTkFrame(self.sales_tab, fg_color="transparent")
         sales_container.pack(fill="both", expand=True, padx=15, pady=15)
         
@@ -126,7 +122,6 @@ class DashboardWindow(ctk.CTk):
         self.create_sales_display_panel(content_area)
         
     def create_date_filter_section(self, parent):
-        # Date filter section
         filter_container = ctk.CTkFrame(
             parent, 
             height=100,
@@ -204,7 +199,6 @@ class DashboardWindow(ctk.CTk):
         today_btn.pack(side="left", padx=5)
         
     def create_sales_input_panel(self, parent):
-        # Sales input panel
         input_panel = ctk.CTkFrame(
             parent, 
             width=450,
@@ -247,7 +241,6 @@ class DashboardWindow(ctk.CTk):
         fields_container = ctk.CTkFrame(input_panel, fg_color="transparent")
         fields_container.pack(fill="x", padx=20, pady=(0, 20))
         
-        # Date selection for sale
         date_label = ctk.CTkLabel(
             fields_container, 
             text="Sale Date:",
@@ -337,7 +330,6 @@ class DashboardWindow(ctk.CTk):
         self.amount_entry.bind('<Return>', lambda e: self.save_sale())
         
     def create_sales_display_panel(self, parent):
-        # Sales display panel
         display_panel = ctk.CTkFrame(
             parent,
             fg_color=self.colors['light_gray'],
@@ -420,15 +412,12 @@ class DashboardWindow(ctk.CTk):
         v_scrollbar.pack(side="right", fill="y", pady=10)
         
     def setup_offers_tab(self):
-        # Offers tab container
         offers_container = ctk.CTkFrame(self.offers_tab, fg_color="transparent")
         offers_container.pack(fill="both", expand=True, padx=15, pady=15)
         
-        # Create a split view for creating offers and viewing saved offers
         split_frame = ctk.CTkFrame(offers_container, fg_color="transparent")
         split_frame.pack(fill="both", expand=True)
         
-        # Left side - create new offer
         left_frame = ctk.CTkFrame(split_frame, fg_color="transparent", width=600)
         left_frame.pack(side="left", fill="both", expand=True, padx=(0, 15))
         left_frame.pack_propagate(False)
@@ -442,7 +431,6 @@ class DashboardWindow(ctk.CTk):
         self.create_products_display(bottom_section)
         self.create_offer_actions_panel(bottom_section)
         
-        # Right side - saved offers list
         right_frame = ctk.CTkFrame(split_frame, fg_color=self.colors['light_gray'], width=400)
         right_frame.pack(side="right", fill="both")
         right_frame.pack_propagate(False)
@@ -463,7 +451,6 @@ class DashboardWindow(ctk.CTk):
             text_color=self.colors['primary']
         ).pack(expand=True)
         
-        # Treeview for saved offers
         tree_container = ctk.CTkFrame(right_frame, fg_color=self.colors['primary'])
         tree_container.pack(fill="both", expand=True, padx=10, pady=10)
         
@@ -492,11 +479,9 @@ class DashboardWindow(ctk.CTk):
         self.saved_offers_tree.pack(side="left", fill="both", expand=True)
         saved_offers_v_scroll.pack(side="right", fill="y")
         
-        # Bind double-click event to open offer details
         self.saved_offers_tree.bind('<Double-1>', self.open_offer_details)
         
     def create_client_section(self, parent):
-        # Client information section
         client_frame = ctk.CTkFrame(
             parent,
             height=90,
@@ -537,7 +522,6 @@ class DashboardWindow(ctk.CTk):
         )
         self.client_entry.pack(side="left")
         
-        # Add button to fetch client data
         fetch_btn = ctk.CTkButton(
             input_frame,
             text="Fetch Client Data",
@@ -552,7 +536,6 @@ class DashboardWindow(ctk.CTk):
         fetch_btn.pack(side="left", padx=(15, 0))
         
     def create_product_input_section(self, parent):
-        # Product input section
         input_section = ctk.CTkFrame(
             parent,
             height=140,
@@ -631,7 +614,6 @@ class DashboardWindow(ctk.CTk):
         remove_btn.pack(side="left", padx=5)
         
     def create_products_display(self, parent):
-        # Products display section
         products_panel = ctk.CTkFrame(
             parent,
             fg_color=self.colors['light_gray'],
@@ -689,7 +671,6 @@ class DashboardWindow(ctk.CTk):
         products_v_scroll.pack(side="right", fill="y", pady=10)
         
     def create_offer_actions_panel(self, parent):
-        # Offer actions panel
         actions_panel = ctk.CTkFrame(
             parent,
             width=400,
@@ -769,109 +750,242 @@ class DashboardWindow(ctk.CTk):
             hover_color=self.colors['text_secondary']
         )
         clear_btn.pack(pady=5)
+
+
+    #
     
     def get_date_display_text(self):
-        """Return formatted date text for display"""
-        pass
-    
-    def on_filter_mode_change(self):
-        """Handle filter mode change"""
-        pass
+        return self.selected_date.strftime('%A, %B %d, %Y')
     
     def navigate_previous(self):
-        """Navigate to previous day"""
-        pass
+        self.selected_date = self.selected_date - timedelta(days=1)
+        self.update_date_display()
+        self.refresh_sales_list()
     
     def navigate_next(self):
-        """Navigate to next day"""
-        pass
+        self.selected_date = self.selected_date + timedelta(days=1)
+        self.update_date_display()
+        self.refresh_sales_list()
     
     def select_today(self):
-        """Select today's date"""
-        pass
+        self.selected_date = date.today()
+        self.update_date_display()
+        self.refresh_sales_list()
     
     def update_date_display(self):
-        """Update the date display label"""
-        pass
+        self.date_display.configure(text=self.get_date_display_text())
+       
     
     def save_sale(self):
-        """Save a new sale to the database"""
-        pass
-    
+        doc = self.doc_entry.get().strip()
+        amount_str = self.amount_entry.get().strip()
+        sale_date_str = self.sale_date_entry.get()
+        sale_date = datetime.strptime(sale_date_str, '%Y-%m-%d').date()
+        sale_datetime = datetime.combine(sale_date, datetime.now().time())
+
+        if not doc or not amount_str:
+            messagebox.showerror("Error", "Please fill all fields")
+            return
+        
+        try:
+            amount = float(amount_str)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid Format")
+            return
+
+        if self.sales_service.create_sale(doc,amount,self.user,sale_datetime):
+            messagebox.showinfo("Success", "Sale Created")
+            self.doc_entry.delete(0, 'end')
+            self.amount_entry.delete(0, 'end')
+            self.refresh_sales_list()
+        else:
+            messagebox.showerror("Error", "Failed creating sale")
+
+        
+
     def refresh_sales_list(self):
-        """Refresh the sales list with data from the database"""
-        pass
-    
-    def export_sales(self):
-        """Export sales data to a CSV file"""
-        pass
-    
-    def fetch_client_data(self):
-        """Fetch client data based on CIF"""
-        pass
-    
+        for item in self.sales_tree.get_children():
+            self.sales_tree.delete(item)
+
+        sales = self.sales_service.get_sales_by_date(self.user, self.selected_date)
+
+        total_amount = 0
+
+        for sale in sales:
+            dt = datetime.fromisoformat(sale.timestamp)
+            self.sales_tree.insert('', 'end', values=(
+                sale.id,
+                sale.doc,
+                f"{sale.amount:.2f}",
+                dt.strftime('%Y-%m-%d'),
+                dt.strftime('%H:%M')
+            ))
+            total_amount += sale.amount
+        self.stats_label.configure(text=f"Total: {len(sales)} sales | {total_amount:.2f} RON")
+        
+
     def add_product_to_offer(self):
-        """Add a product to the current offer"""
-        pass
+        code = self.product_code_entry.get().strip()
+        name = self.product_name_entry.get().strip()
+        qty_str = self.quantity_entry.get().strip()
+        price_str = self.unit_price_entry.get().strip()
+        vat_str = self.vat_entry.get().strip()
+
+        if not code or not name or not qty_str or not price_str or not vat_str:
+            messagebox.showerror("Error", "Please fill all fields")
+            return
+
+        try:
+            quantity = float(qty_str)
+            unit_price = float(price_str)
+            vat = float(vat_str)
+        except ValueError:
+            messagebox.showerror("Error", "Invalid Format")
+            return
+
+        product = {
+            'product_code': code,
+            'product_name': name,
+            'quantity': quantity,
+            'unit_price': unit_price,
+            'vat': vat
+        }
+        self.current_offer_positions.append(product)
+        self.refresh_products_display()
+        self.clear_product_fields()
+
+
     
     def remove_selected_product(self):
-        """Remove selected product from the current offer"""
-        pass
-    
-    def preview_offer_internal(self):
-        """Preview offer with internal product names"""
-        pass
-    
-    def preview_offer_client(self):
-        """Preview offer with client-facing product names"""
-        pass
-    
-    def show_offer_preview(self, internal=True):
-        """Show a preview of the current offer"""
-        pass
-    
-    def export_offer_csv(self, internal=True):
-        """Export offer to CSV format"""
-        pass
-    
-    def export_offer_pdf(self):
-        """Export offer to PDF format"""
-        pass
+
+        selection = self.products_tree.selection()
+        if not selection:
+            messagebox.showerror("Error", "Select profuct to remove")
+            return
+
+        item = self.products_tree.item(selection[0])
+        product_code = item['values'][0]
+
+        new_positions = []
+        for p in self.current_offer_positions:
+            if p['product_code'] != product_code:
+                new_positions.append(p)
+
+        self.current_offer_positions = new_positions
+        self.refresh_products_display()
+
+    def refresh_products_display(self):
+        for item in self.products_tree.get_children():
+            self.products_tree.delete(item)
+
+
+        for product in self.current_offer_positions:
+            line_total = product['quantity'] * product['unit_price'] * (1 + product['vat']/100)
+            self.products_tree.insert('', 'end', values=(
+                product['product_code'],
+                product['product_name'],
+                product['quantity'],
+                f"{product['unit_price']:.2f}",
+                f"{product['vat']:.1f}",
+                f"{line_total:.2f}"
+            ))
+
+
+    def clear_product_fields(self):
+        self.product_code_entry.delete(0, 'end')
+        self.product_name_entry.delete(0, 'end')
+        self.quantity_entry.delete(0, 'end')
+        self.unit_price_entry.delete(0, 'end')
+        self.vat_entry.delete(0, 'end')
+        
     
     def save_offer(self):
-        """Save the current offer to the database"""
-        pass
-    
+        cif = self.client_entry.get().strip()
+        if not cif or not self.current_offer_positions:
+            messagebox.showerror("Error", "Introduce products or CIF")
+            return
+        
+        if self.offer_service.create_offer(cif,self.current_offer_positions,self.user):
+            messagebox.showinfo("Succes", "Oferta creata")
+            self.clear_offer()
+            self.load_saved_offers()
+        else:
+            messagebox.showerror("Error", "Introduce products or CIF")
+            return
+
     def load_saved_offers(self):
-        """Load saved offers from the database"""
-        pass
+        for item in self.saved_offers_tree.get_children():
+            self.saved_offers_tree.delete(item)
+
+        offers = self.offer_service.get_offers_by_user(self.user)
+        for offer in offers:
+            total = sum(
+                p.quantity * p.unit_price * (1 + p.vat/100)
+                for p in offer.products
+            )
+            dt = datetime.fromisoformat(offer.timestamp)
+            self.saved_offers_tree.insert('', 'end', values=(
+                offer.id,
+                offer.cif,
+                dt.strftime('%Y-%m-%d'),
+                f"{total:.2f}"
+            ))
     
     def open_offer_details(self, event):
-        """Open details of a saved offer"""
-        pass
+        selection = self.saved_offers_tree.selection()
+        if not selection :
+            messagebox.showerror("Error", "No selected offer")
+            return
+
+        item = self.saved_offers_tree.item(selection[0])
+        offer_id = item['values'][0]
+
+        offers = self.offer_service.get_offers_by_user(self.user)
+        offer_data = next((o for o in offers if o.id == offer_id), None)
+    
+        if offer_data:
+            detail_window = OfferDetailWindow(self, offer_data, self.offer_service)
+
     
     def clear_offer(self):
-        """Clear the current offer"""
-        pass
+        self.client_entry.delete(0, 'end')
+        self.current_offer_positions = []
+        self.refresh_products_display()
+        self.clear_product_fields()
+
+    def fetch_client_data(self):
+        cif = self.client_entry.get().strip()
+
+        if not cif:
+            messagebox.showerror("Error", "Introduce CIF")
+            return
+        try:
+            client_service = ClientData(cif)
+            client_data = client_service.get_data()
+
+            if client_data:
+                name = client_data[0]
+                code = client_data[1]
+                addres = client_data[2]
+                info_text = f"Company: {name}\nNumber: {code}\nAddress: {addres}"
+                messagebox.showinfo("Client Data", info_text)
+            else:
+                messagebox.showerror("Error", "Could not fetch client data. Check CIF number or try again later.")
+        except Exception as e:
+            messagebox.showerror("Error", "Failed to fetch client data")
 
 
-class OfferDetailWindow(ctk.CTkToplevel):
-    def __init__(self, parent, offer, offer_service):
-        """Initialize offer detail window"""
-        super().__init__(parent)
-        self.offer = offer
-        self.offer_service = offer_service
-        self.title(f"Offer Details - {offer.client_cif}")
-        self.geometry("1000x800")
-        self.configure(fg_color=parent.colors['primary'])
-        
-        # Create the GUI elements for offer details
-        pass
     
-    def export_offer_csv(self, internal=True):
-        """Export offer to CSV format"""
-        pass
+
+    def export_sales(self):
+        messagebox.showinfo("Info", "Export functionality not implemented yet")
+
+    def preview_offer_internal(self):
+        messagebox.showinfo("Info", "Internal preview not implemented yet")
+
+    def preview_offer_client(self):
+        messagebox.showinfo("Info", "Client preview not implemented yet")   
+
     
-    def export_offer_pdf(self):
-        """Export offer to PDF format"""
-        pass
+
+

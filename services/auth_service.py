@@ -1,6 +1,7 @@
 import bcrypt
 from database.connection import Database
 from models.user import User
+import sqlite3
 
 class AuthService:
     def __init__(self, db_instance):

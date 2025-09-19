@@ -2,6 +2,8 @@ from database.connection import Database
 from datetime import datetime, date 
 import sqlite3
 from models.user import User
+from models.offer import Offer
+from models.offer_pos import Offer_pos
 
 class OfferService:
     def __init__(self,db_instance):
@@ -78,26 +80,35 @@ class OfferService:
 
             final_offers = []
             for offer in offers:
-                offer_dict = {
-                    'id': offer[0],
-                    'cif': offer[1],
-                    'timestamp': offer[2],
-                    'user_id': offer[3]
-                }
+                offer_obj = Offer(
+                    id=offer[0],
+                    cif=offer[1], 
+                    timestamp=offer[2],
+                    user_id=offer[3]
+                )
+
                 get_positions_sql = """
-                    SELECT product_code, product_name, quantity, unit_price, vat 
+                    SELECT id, offer_id, product_code, product_name, quantity, unit_price, vat 
                     FROM offers_positions 
                     WHERE offer_id = ?
                 """
                 cursor.execute(get_positions_sql, (offer[0],))
                 positions_data = cursor.fetchall()
                 
-                offer_dict['products'] = [
-                    {'product_code': p[0], 'product_name': p[1], 'quantity': p[2], 'unit_price': p[3], 'vat': p[4]}
-                    for p in positions_data
-                ]
-                
-                final_offers.append(offer_dict)
+                offer_obj.products = []
+                for p in positions_data:
+                    offer_pos = Offer_pos(
+                        id=p[0],
+                        offer_id=p[1],
+                        product_code=p[2],
+                        product_name=p[3],
+                        quantity=p[4],
+                        unit_price=p[5],
+                        vat=p[6]
+                    )
+                    offer_obj.products.append(offer_pos)
+            
+                final_offers.append(offer_obj)
 
             
             print("Fetched Offers")
