@@ -9,7 +9,7 @@ class OfferService:
     def __init__(self,db_instance):
         self.db = db_instance
 
-    def create_offer(self, cif, products, user):
+    def create_offer(self, cif, name, address,phone, products, user):
         try:
             if not products:
                 self.db.con.rollback()
@@ -19,11 +19,11 @@ class OfferService:
             cursor = self.db.con.cursor()
             new_timestamp = datetime.now().isoformat()
             new_offer = """ 
-            INSERT INTO offers (cif, timestamp, user_id)
-            VALUES (?, ?, ?)
+            INSERT INTO offers (cif, name, address, phone, timestamp, user_id)
+            VALUES (?, ?, ?, ?, ?, ?)
             """
 
-            values = (cif, new_timestamp, user.id)
+            values = (cif, name, address, phone, new_timestamp, user.id)
 
             cursor.execute(new_offer,values)
             
@@ -82,9 +82,12 @@ class OfferService:
             for offer in offers:
                 offer_obj = Offer(
                     id=offer[0],
-                    cif=offer[1], 
+                    cif=offer[1],
+                    name=offer[3],
+                    address=offer[4],
+                    phone=offer[5], 
                     timestamp=offer[2],
-                    user_id=offer[3]
+                    user_id=offer[6]
                 )
 
                 get_positions_sql = """

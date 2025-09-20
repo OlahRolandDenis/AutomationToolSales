@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import ttk, messagebox, filedialog
+from tkinter import ttk, messagebox, filedialog, Frame
 from datetime import date, datetime, timedelta
 from models.sale import Sale
 from models.offer import Offer
@@ -8,7 +8,7 @@ import csv
 from tkcalendar import DateEntry
 from ui.offer_window import OfferDetailWindow
 from services.get_client_data import ClientData
-
+import tkinter as tk
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
@@ -249,15 +249,38 @@ class DashboardWindow(ctk.CTk):
         )
         date_label.pack(anchor="w", pady=(0, 8))
         
-        self.sale_date_entry = DateEntry(
-            fields_container,
-            width=42,
-            background='darkblue',
-            foreground='white',
-            borderwidth=2,
-            date_pattern='yyyy-mm-dd'
+        date_input_frame = ctk.CTkFrame(fields_container, fg_color="transparent")
+        date_input_frame.pack(pady=(0, 20))
+
+        ctk.CTkLabel(date_input_frame, text="Year:", font=("Arial", 11)).pack(side="left", padx=(0, 5))
+        self.year_entry = ctk.CTkEntry(
+            date_input_frame,
+            width=80,
+            height=35,
+            placeholder_text="2024"
         )
-        self.sale_date_entry.pack(pady=(0, 20))
+        self.year_entry.pack(side="left", padx=(0, 15))
+        self.year_entry.insert(0, str(date.today().year))
+
+        ctk.CTkLabel(date_input_frame, text="Month:", font=("Arial", 11)).pack(side="left", padx=(0, 5))
+        self.month_entry = ctk.CTkEntry(
+            date_input_frame,
+            width=60,
+            height=35,
+            placeholder_text="12"
+        )
+        self.month_entry.pack(side="left", padx=(0, 15))
+        self.month_entry.insert(0, str(date.today().month).zfill(2))
+
+        ctk.CTkLabel(date_input_frame, text="Day:", font=("Arial", 11)).pack(side="left", padx=(0, 5))
+        self.day_entry = ctk.CTkEntry(
+            date_input_frame,
+            width=60,
+            height=35,
+            placeholder_text="25"
+        )
+        self.day_entry.pack(side="left", padx=(0, 15))
+        self.day_entry.insert(0, str(date.today().day).zfill(2))
         
         doc_label = ctk.CTkLabel(
             fields_container, 
@@ -484,7 +507,7 @@ class DashboardWindow(ctk.CTk):
     def create_client_section(self, parent):
         client_frame = ctk.CTkFrame(
             parent,
-            height=90,
+            height=130,  # Reduced height since we only need 2 rows now
             fg_color=self.colors['light_gray'],
             corner_radius=0,
             border_width=1,
@@ -501,39 +524,32 @@ class DashboardWindow(ctk.CTk):
         )
         title_label.pack(pady=(15, 5))
         
+        # Create container for all input fields
         input_frame = ctk.CTkFrame(client_frame, fg_color="transparent")
         input_frame.pack(fill="x", padx=30, pady=(0, 15))
         
-        ctk.CTkLabel(
-            input_frame,
-            text="Client CIF:",
-            font=("Arial", 12, "bold"),
-            text_color=self.colors['text_primary']
-        ).pack(side="left", padx=(0, 15))
+        # Row 1: CIF, Name, Phone
+        row1 = ctk.CTkFrame(input_frame, fg_color="transparent")
+        row1.pack(fill="x", pady=3)
         
-        self.client_entry = ctk.CTkEntry(
-            input_frame,
-            placeholder_text="Enter client CIF number...",
-            width=400,
-            height=40,
-            font=("Arial", 12),
-            border_width=1,
-            border_color=self.colors['secondary']
-        )
-        self.client_entry.pack(side="left")
+        ctk.CTkLabel(row1, text="CIF:", width=50, font=("Arial", 11, "bold")).pack(side="left", padx=5)
+        self.client_cif_entry = ctk.CTkEntry(row1, width=120, height=35, border_width=1, border_color=self.colors['secondary'])
+        self.client_cif_entry.pack(side="left", padx=5)
         
-        fetch_btn = ctk.CTkButton(
-            input_frame,
-            text="Fetch Client Data",
-            command=self.fetch_client_data,
-            width=120,
-            height=40,
-            font=("Arial", 11),
-            fg_color=self.colors['dark_gray'],
-            text_color=self.colors['primary'],
-            hover_color=self.colors['text_secondary']
-        )
-        fetch_btn.pack(side="left", padx=(15, 0))
+        ctk.CTkLabel(row1, text="Name:", width=50, font=("Arial", 11, "bold")).pack(side="left", padx=(15, 5))
+        self.client_name_entry = ctk.CTkEntry(row1, width=200, height=35, border_width=1, border_color=self.colors['secondary'])
+        self.client_name_entry.pack(side="left", padx=5)
+        
+        ctk.CTkLabel(row1, text="Phone:", width=50, font=("Arial", 11, "bold")).pack(side="left", padx=(15, 5))
+        self.client_phone_entry = ctk.CTkEntry(row1, width=150, height=35, border_width=1, border_color=self.colors['secondary'])
+        self.client_phone_entry.pack(side="left", padx=5)
+        
+        row2 = ctk.CTkFrame(input_frame, fg_color="transparent")
+        row2.pack(fill="x", pady=(10, 3))
+        
+        ctk.CTkLabel(row2, text="Address:", width=50, font=("Arial", 11, "bold")).pack(side="left", padx=5)
+        self.client_address_entry = ctk.CTkEntry(row2, width=600, height=35, border_width=1, border_color=self.colors['secondary'])
+        self.client_address_entry.pack(side="left", padx=5)
         
     def create_product_input_section(self, parent):
         input_section = ctk.CTkFrame(
@@ -592,7 +608,7 @@ class DashboardWindow(ctk.CTk):
             text="Add",
             command=self.add_product_to_offer,
             width=100,
-            height=35,
+            height=50,
             fg_color=self.colors['dark_gray'],
             text_color=self.colors['primary'],
             hover_color=self.colors['text_secondary'],
@@ -605,7 +621,7 @@ class DashboardWindow(ctk.CTk):
             text="Remove",
             command=self.remove_selected_product,
             width=100,
-            height=35,
+            height=50,
             fg_color=self.colors['dark_gray'],
             text_color=self.colors['primary'],
             hover_color=self.colors['text_secondary'],
@@ -702,29 +718,7 @@ class DashboardWindow(ctk.CTk):
         buttons_container = ctk.CTkFrame(actions_panel, fg_color="transparent")
         buttons_container.pack(fill="x", padx=20, pady=(20, 20))
         
-        preview_internal_btn = ctk.CTkButton(
-            buttons_container,
-            text="Preview Internal",
-            command=self.preview_offer_internal,
-            width=360,
-            height=40,
-            fg_color=self.colors['dark_gray'],
-            text_color=self.colors['primary'],
-            hover_color=self.colors['text_secondary']
-        )
-        preview_internal_btn.pack(pady=5)
-        
-        preview_client_btn = ctk.CTkButton(
-            buttons_container,
-            text="Preview Client",
-            command=self.preview_offer_client,
-            width=360,
-            height=40,
-            fg_color=self.colors['dark_gray'],
-            text_color=self.colors['primary'],
-            hover_color=self.colors['text_secondary']
-        )
-        preview_client_btn.pack(pady=5)
+       
         
         save_offer_btn = ctk.CTkButton(
             buttons_container,
@@ -760,38 +754,58 @@ class DashboardWindow(ctk.CTk):
     def navigate_previous(self):
         self.selected_date = self.selected_date - timedelta(days=1)
         self.update_date_display()
+        self.update_manual_date_inputs()  
         self.refresh_sales_list()
     
     def navigate_next(self):
         self.selected_date = self.selected_date + timedelta(days=1)
         self.update_date_display()
+        self.update_manual_date_inputs()  
         self.refresh_sales_list()
     
     def select_today(self):
         self.selected_date = date.today()
         self.update_date_display()
+        self.update_manual_date_inputs()  
         self.refresh_sales_list()
     
     def update_date_display(self):
         self.date_display.configure(text=self.get_date_display_text())
+
+    def update_manual_date_inputs(self):
+        self.year_entry.delete(0, 'end')
+        self.year_entry.insert(0, str(self.selected_date.year))
+
+        self.month_entry.delete(0, 'end')
+        self.month_entry.insert(0, str(self.selected_date.month).zfill(2))
+
+        self.day_entry.delete(0, 'end')
+        self.day_entry.insert(0, str(self.selected_date.day).zfill(2))
        
     
     def save_sale(self):
         doc = self.doc_entry.get().strip()
         amount_str = self.amount_entry.get().strip()
-        sale_date_str = self.sale_date_entry.get()
-        sale_date = datetime.strptime(sale_date_str, '%Y-%m-%d').date()
-        sale_datetime = datetime.combine(sale_date, datetime.now().time())
+        year_str = self.year_entry.get().strip()
+        month_str = self.month_entry.get().strip() 
+        day_str = self.day_entry.get().strip()
 
-        if not doc or not amount_str:
+        if not doc or not amount_str or not year_str or not month_str or not day_str:
             messagebox.showerror("Error", "Please fill all fields")
             return
         
         try:
+            year = int(year_str)
+            month = int(month_str)
+            day = int(day_str)
             amount = float(amount_str)
+            sale_date = date(year, month, day)
         except ValueError:
             messagebox.showerror("Error", "Invalid Format")
             return
+        
+        sale_datetime = datetime.combine(sale_date, datetime.now().time())
+
 
         if self.sales_service.create_sale(doc,amount,self.user,sale_datetime):
             messagebox.showinfo("Success", "Sale Created")
@@ -900,12 +914,16 @@ class DashboardWindow(ctk.CTk):
         
     
     def save_offer(self):
-        cif = self.client_entry.get().strip()
-        if not cif or not self.current_offer_positions:
+        cif = self.client_cif_entry.get().strip()
+        name = self.client_name_entry.get().strip()
+        address = self.client_address_entry.get().strip()
+        phone = self.client_phone_entry.get().strip()
+
+        if not cif or not name or not address or not phone or not self.current_offer_positions:
             messagebox.showerror("Error", "Introduce products or CIF")
             return
         
-        if self.offer_service.create_offer(cif,self.current_offer_positions,self.user):
+        if self.offer_service.create_offer(cif, name, address, phone, self.current_offer_positions,self.user):
             messagebox.showinfo("Succes", "Oferta creata")
             self.clear_offer()
             self.load_saved_offers()
@@ -926,7 +944,7 @@ class DashboardWindow(ctk.CTk):
             dt = datetime.fromisoformat(offer.timestamp)
             self.saved_offers_tree.insert('', 'end', values=(
                 offer.id,
-                offer.cif,
+                offer.name if offer.name else offer.cif,
                 dt.strftime('%Y-%m-%d'),
                 f"{total:.2f}"
             ))
@@ -948,31 +966,34 @@ class DashboardWindow(ctk.CTk):
 
     
     def clear_offer(self):
-        self.client_entry.delete(0, 'end')
+        self.client_cif_entry.delete(0, 'end')
+        self.client_name_entry.delete(0, 'end')
+        self.client_address_entry.delete(0, 'end')
+        self.client_phone_entry.delete(0, 'end')
         self.current_offer_positions = []
         self.refresh_products_display()
         self.clear_product_fields()
 
-    def fetch_client_data(self):
-        cif = self.client_entry.get().strip()
+    # def fetch_client_data(self):
+    #     cif = self.client_entry.get().strip()
 
-        if not cif:
-            messagebox.showerror("Error", "Introduce CIF")
-            return
-        try:
-            client_service = ClientData(cif)
-            client_data = client_service.get_data()
+    #     if not cif:
+    #         messagebox.showerror("Error", "Introduce CIF")
+    #         return
+    #     try:
+    #         client_service = ClientData(cif)
+    #         client_data = client_service.get_data()
 
-            if client_data:
-                name = client_data[0]
-                code = client_data[1]
-                addres = client_data[2]
-                info_text = f"Company: {name}\nNumber: {code}\nAddress: {addres}"
-                messagebox.showinfo("Client Data", info_text)
-            else:
-                messagebox.showerror("Error", "Could not fetch client data. Check CIF number or try again later.")
-        except Exception as e:
-            messagebox.showerror("Error", "Failed to fetch client data")
+    #         if client_data:
+    #             name = client_data[0]
+    #             code = client_data[1]
+    #             addres = client_data[2]
+    #             info_text = f"Company: {name}\nNumber: {code}\nAddress: {addres}"
+    #             messagebox.showinfo("Client Data", info_text)
+    #         else:
+    #             messagebox.showerror("Error", "Could not fetch client data. Check CIF number or try again later.")
+    #     except Exception as e:
+    #         messagebox.showerror("Error", "Failed to fetch client data")
 
 
     

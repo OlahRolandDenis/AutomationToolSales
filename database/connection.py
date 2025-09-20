@@ -45,6 +45,9 @@ class Database:
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         cif TEXT,
         timestamp TEXT,
+        name TEXT,
+        address TEXT,
+        phone TEXT,
         user_id INTEGER,
         FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
         )
