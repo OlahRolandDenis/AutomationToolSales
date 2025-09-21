@@ -39,7 +39,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         self.load_offer_data()
         
     def create_widgets(self):
-        # Header
         header_frame = ctk.CTkFrame(
             self,
             height=80,
@@ -68,11 +67,9 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         date_label.pack(anchor="w")
         
-        # Main content
         main_frame = ctk.CTkFrame(self, fg_color="transparent")
         main_frame.pack(fill="both", expand=True, padx=20, pady=20)
         
-        # Left side - Products list
         left_frame = ctk.CTkFrame(main_frame)
         left_frame.pack(side="left", fill="both", expand=True, padx=(0, 10))
         
@@ -84,7 +81,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         products_header.pack(pady=15)
         
-        # Products tree
         tree_frame = ctk.CTkFrame(left_frame, fg_color=self.colors['primary'])
         tree_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
         
@@ -115,16 +111,13 @@ class OfferDetailWindow(ctk.CTkToplevel):
         self.products_tree.pack(side="left", fill="both", expand=True, padx=10, pady=10)
         scrollbar.pack(side="right", fill="y", pady=10)
         
-        # Right side - Actions and form with scrollable frame
         right_frame = ctk.CTkFrame(main_frame, width=400)
         right_frame.pack(side="right", fill="y")
         right_frame.pack_propagate(False)
         
-        # Create scrollable frame for the right panel
         self.scrollable_frame = ctk.CTkScrollableFrame(right_frame, width=380)
         self.scrollable_frame.pack(fill="both", expand=True, padx=10, pady=10)
         
-        # Add product section
         add_section = ctk.CTkFrame(self.scrollable_frame)
         add_section.pack(fill="x", padx=10, pady=20)
         
@@ -136,43 +129,34 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         add_header.pack(pady=10)
         
-        # Form fields
         self.create_product_form(add_section)
         
-        # Action buttons
         self.create_action_buttons(self.scrollable_frame)
         
-        # Export buttons
         self.create_export_buttons(self.scrollable_frame)
         
-        # Total section
         self.create_total_section(self.scrollable_frame)
     
     def create_product_form(self, parent):
         form_frame = ctk.CTkFrame(parent, fg_color="transparent")
         form_frame.pack(fill="x", padx=15, pady=15)
         
-        # Product Code
         ctk.CTkLabel(form_frame, text="Code:", font=("Arial", 11, "bold")).pack(anchor="w", pady=(0, 5))
         self.product_code_entry = ctk.CTkEntry(form_frame, width=350, height=35)
         self.product_code_entry.pack(pady=(0, 10))
         
-        # Product Name
         ctk.CTkLabel(form_frame, text="Name:", font=("Arial", 11, "bold")).pack(anchor="w", pady=(0, 5))
         self.product_name_entry = ctk.CTkEntry(form_frame, width=350, height=35)
         self.product_name_entry.pack(pady=(0, 10))
         
-        # Quantity
         ctk.CTkLabel(form_frame, text="Quantity:", font=("Arial", 11, "bold")).pack(anchor="w", pady=(0, 5))
         self.quantity_entry = ctk.CTkEntry(form_frame, width=350, height=35)
         self.quantity_entry.pack(pady=(0, 10))
         
-        # Unit Price
         ctk.CTkLabel(form_frame, text="Unit Price:", font=("Arial", 11, "bold")).pack(anchor="w", pady=(0, 5))
         self.unit_price_entry = ctk.CTkEntry(form_frame, width=350, height=35)
         self.unit_price_entry.pack(pady=(0, 10))
         
-        # VAT
         ctk.CTkLabel(form_frame, text="VAT %:", font=("Arial", 11, "bold")).pack(anchor="w", pady=(0, 5))
         self.vat_entry = ctk.CTkEntry(form_frame, width=350, height=35)
         self.vat_entry.pack(pady=(0, 10))
@@ -181,7 +165,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         buttons_frame = ctk.CTkFrame(parent, fg_color="transparent")
         buttons_frame.pack(fill="x", padx=10, pady=20)
         
-        # Add Product button
         add_btn = ctk.CTkButton(
             buttons_frame,
             text="Add Product",
@@ -193,7 +176,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         add_btn.pack(pady=5)
         
-        # Update Selected button
         update_btn = ctk.CTkButton(
             buttons_frame,
             text="Update Selected",
@@ -205,7 +187,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         update_btn.pack(pady=5)
         
-        # Delete Selected button
         delete_btn = ctk.CTkButton(
             buttons_frame,
             text="Delete Selected",
@@ -217,7 +198,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         delete_btn.pack(pady=5)
         
-        # Fill form from selection
         fill_btn = ctk.CTkButton(
             buttons_frame,
             text="Fill Form from Selection",
@@ -241,7 +221,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         export_header.pack(pady=(10, 15))
         
-        # Export CSV button
         csv_btn = ctk.CTkButton(
             export_frame,
             text="📊 Export CSV",
@@ -253,7 +232,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         csv_btn.pack(pady=5)
         
-        # Export PDF button
         pdf_btn = ctk.CTkButton(
             export_frame,
             text="📄 Export PDF",
@@ -265,7 +243,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         )
         pdf_btn.pack(pady=5)
         
-        # Generate Offer Document button
         offer_doc_btn = ctk.CTkButton(
             export_frame,
             text="📋 Generate Offer Document",
@@ -288,8 +265,85 @@ class OfferDetailWindow(ctk.CTkToplevel):
             text_color=self.colors['secondary']
         )
         self.total_label.pack(pady=20)
-    
-    # =================== FUNCTION DEFINITIONS =================== #
+
+    def load_offer_data(self):
+        for item in self.products_tree.get_children():
+            self.products_tree.delete(item)
+
+        if self.offer.products:
+            for prod in products:
+                price_total = self.calulate_offer_price(prod.quantity,prod.unit_price,prod.vat)
+
+                self.products_tree.insert('', 'end', values=(
+                    product.id,                          
+                    product.product_code,                
+                    product.product_name,               
+                    product.quantity,                    
+                    f"{product.unit_price:.2f}",        
+                    f"{product.vat:.1f}",               
+                    f"{line_total:.2f}"                
+                ))
+            total = self.calculate_total_price()
+            self.total_label.configure(text=f"Total: {total['final_total']:.2f} RON")
+
+    def reload_offer(self):
+        try:
+            offers = self.offer_service.get_offers_by_user(self.offer.user_id)
+
+            new_offer = None
+
+            for o in offers :
+                if self.offer.id == o.id:
+                    new_offer = o
+                    break
+            if new_offer:
+                self.offer = new_offer
+                self.load_offer_data()
+            else:
+                messagebox.showerror("Error", "Offer no longer exists")
+                self.destroy() 
+        except Exception as e:
+            messagebox.showerror("Error", "Failed to reload")
+
+    def  add_product(self):
+        is_valid, message  = slef.vallidate_form()
+
+        if not valid:
+            messagebox.showerror("Error", "Form is not ok")
+            return
+        
+        code = self.product_code_entry.get().strip()
+        name = self.product_name_entry.get().strip()
+        quantity = float(self.product_quantity_entry.get().strip())
+        unit_price = float(self.product_unit_price_entry.get().strip())
+        vat = float(self.product_vat_entry.get().strip())
+
+
+        try:
+            success = slef.offer_service.add_product(self.offer.id,code, name, quantity,unit_price,vat)
+            # i need to create the add_product() function in the offer_serivice
+
+            if success:
+                 messagebox.showeinfo("Success", "Product added")
+                 self.reload_offer()
+                 self.load_offer_data()
+                 self.parent_window.load_offer_data()
+            else:
+                messagebox.showeerror("Error", "Product not added")
+        except Exception as e:
+            messagebox.showeerror("Error", "Failed to add product")
+
+        
+
+
+            
+
+
+        
 
     
+
+
+
+
 

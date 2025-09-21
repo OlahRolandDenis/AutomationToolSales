@@ -995,18 +995,6 @@ class DashboardWindow(ctk.CTk):
     #     except Exception as e:
     #         messagebox.showerror("Error", "Failed to fetch client data")
 
-
-    
-
-    def export_sales(self):
-        messagebox.showinfo("Info", "Export functionality not implemented yet")
-
-    def preview_offer_internal(self):
-        messagebox.showinfo("Info", "Internal preview not implemented yet")
-
-    def preview_offer_client(self):
-        messagebox.showinfo("Info", "Client preview not implemented yet")   
-
     
 
 

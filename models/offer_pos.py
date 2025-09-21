@@ -1,4 +1,4 @@
-class Offer_pos :
+class Offer_pos:
     def __init__(self,id,offer_id,product_code,product_name,quantity,unit_price,vat):
         self.id = id
         self.offer_id = offer_id
