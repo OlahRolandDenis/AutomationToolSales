@@ -29,6 +29,7 @@ class SalesService:
             print("Error db")
             return False
         except Exception as e:
+            self.db.con.rollback()
             print(f"Error {e}")
             return False
 
@@ -162,5 +163,18 @@ class SalesService:
             return []
     
 
-    def delete_sale():
-        pass
+    def delete_sale(self,id):
+        if not id:
+            print("Error no data")
+            return False
+        
+        try:
+            del_com = """DELETE FROM sales WHERE id =?"""
+            cursor = self.db.con.cursor()
+            cursor.execute(del_com,(id,))
+            self.db.con.commit()
+            return True
+        except Exception as e:
+            self.db.con.rollback()
+            print(f"Error no data: {e}")
+            return False

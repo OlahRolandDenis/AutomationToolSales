@@ -305,7 +305,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
     def reload_offer(self):
         try:
-            offers = self.offer_service.get_offers_by_user(self.offer.user_id)
+            offers = self.offer_service.get_offers_by_user_by_id(self.offer.user_id)
 
             new_offer = None
 
@@ -338,14 +338,13 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
         try:
             success = self.offer_service.add_product(self.offer.id,code, name, quantity,unit_price,vat)
-            # i need to create the add_product() function in the offer_service
 
             if success:
                 
                 messagebox.showinfo("Success", "Product added")
                 self.reload_offer()
                 self.load_offer_data()
-                self.parent_window.load_offer_data()
+                self.parent_window.load_saved_offers()
             else:
                 messagebox.showerror("Error", "Product not added")
         except Exception as e:
@@ -417,7 +416,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
                 messagebox.showinfo("Success", "Product updated")
                 self.reload_offer()
                 self.load_offer_data()
-                self.parent_window.load_offer_data()
+                self.parent_window.load_saved_offers()
             else:
                 messagebox.showerror("Error", "Failed to update product")
         except Exception as e:
@@ -444,7 +443,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
                 messagebox.showinfo("Success", "Product deleted")
                 self.reload_offer()
                 self.load_offer_data()
-                self.parent_window.load_offer_data()
+                self.parent_window.load_saved_offers()
             else:
                 messagebox.showerror("Error", "Failed to delete product")
         except Exception as e:
@@ -489,7 +488,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
                 messagebox.showerror("Error", "Could not delete offer")
                 return
             else:
-                self.parent_window.load_offer_data()
+                self.parent_window.load_saved_offers()
                 self.destroy()
                 messagebox.showinfo("Success", "Offer deleted")
         except Exception as e:

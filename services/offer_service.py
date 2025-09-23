@@ -12,7 +12,6 @@ class OfferService:
     def create_offer(self, cif, name, address,phone, products, user):
         try:
             if not products:
-                self.db.con.rollback()
                 print("Products list is empty → Offer not created")
                 return False
 
@@ -59,7 +58,69 @@ class OfferService:
             self.db.con.rollback()
             print(f"Error {e}")
             return False
+        
 
+    def get_offers_by_user_by_id(self,id):
+        try:
+            get_offers = """ 
+                SELECT * FROM offers WHERE user_id =? ORDER BY timestamp DESC
+            """
+
+            cursor = self.db.con.cursor()
+
+            cursor.execute(get_offers,(id,))
+
+            offers = cursor.fetchall()
+
+            if not offers :
+                print("Error no data")
+                return []
+
+            final_offers = []
+            for offer in offers:
+
+                get_positions_sql = """
+                    SELECT id, offer_id, product_code, product_name, quantity, unit_price, vat 
+                    FROM offers_positions 
+                    WHERE offer_id = ?
+                """
+                cursor.execute(get_positions_sql, (offer[0],))
+                positions_data = cursor.fetchall()
+
+
+                products = []
+                for p in positions_data:
+                    offer_pos = Offer_pos(
+                        id=p[0],
+                        offer_id=p[1],
+                        product_code=p[2],
+                        product_name=p[3],
+                        quantity=p[4],
+                        unit_price=p[5],
+                        vat=p[6]
+                    )
+                    products.append(offer_pos)
+
+                    
+                offer_obj = Offer(
+                    id=offer[0],
+                    cif=offer[1],
+                    name=offer[3],
+                    address=offer[4],
+                    phone=offer[5], 
+                    timestamp=offer[2],
+                    user_id=offer[6],
+                    products = products
+                )
+
+                final_offers.append(offer_obj)
+
+            
+            print("Fetched Offers")
+            return final_offers
+        except Exception as e:
+            print(f"Error {e}")
+            return []
 
     
     def get_offers_by_user(self, user):
@@ -80,15 +141,6 @@ class OfferService:
 
             final_offers = []
             for offer in offers:
-                offer_obj = Offer(
-                    id=offer[0],
-                    cif=offer[1],
-                    name=offer[3],
-                    address=offer[4],
-                    phone=offer[5], 
-                    timestamp=offer[2],
-                    user_id=offer[6]
-                )
 
                 get_positions_sql = """
                     SELECT id, offer_id, product_code, product_name, quantity, unit_price, vat 
@@ -97,8 +149,9 @@ class OfferService:
                 """
                 cursor.execute(get_positions_sql, (offer[0],))
                 positions_data = cursor.fetchall()
-                
-                offer_obj.products = []
+
+
+                products = []
                 for p in positions_data:
                     offer_pos = Offer_pos(
                         id=p[0],
@@ -109,8 +162,20 @@ class OfferService:
                         unit_price=p[5],
                         vat=p[6]
                     )
-                    offer_obj.products.append(offer_pos)
-            
+                    products.append(offer_pos)
+
+                    
+                offer_obj = Offer(
+                    id=offer[0],
+                    cif=offer[1],
+                    name=offer[3],
+                    address=offer[4],
+                    phone=offer[5], 
+                    timestamp=offer[2],
+                    user_id=offer[6],
+                    products = products
+                )
+
                 final_offers.append(offer_obj)
 
             
@@ -120,3 +185,82 @@ class OfferService:
             print(f"Error {e}")
             return []
         
+
+    def delete_offer(self, offer_id):
+        if not offer_id:
+            print("Error no data")
+            return False
+
+        try:
+            del_com1 = """DELETE FROM offers_positions WHERE offer_id =?"""
+            del_com2 = """DELETE FROM offers WHERE id =?"""
+            cursor = self.db.con.cursor()
+            cursor.execute(del_com1,(offer_id,))
+            cursor.execute(del_com2,(offer_id,))
+            self.db.con.commit()
+            return True
+        except Exception as e:
+            self.db.con.rollback()
+            print(f"Error: {e}")
+            return False
+
+
+    def delete_product(self, product_id):
+        if not product_id:
+            print("Error no data")
+            return False
+
+        try:
+            del_com = """DELETE FROM offers_positions WHERE id =?"""
+            cursor = self.db.con.cursor()
+            cursor.execute(del_com,(product_id,))
+            self.db.con.commit()
+            return True
+        except Exception as e:
+            self.db.con.rollback()
+            print(f"Error: {e}")
+            return False
+            
+
+
+
+
+    def add_product(self, id, code, name, quantity, price, vat):
+        if not id or not code or not name or not quantity or not price or not vat:
+            print("Error no data")
+            return False
+        try:
+            new_offer_positions = """ 
+                INSERT INTO offers_positions (offer_id, product_code, product_name, quantity, unit_price, vat)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """
+
+            cursor = self.db.con.cursor()
+            cursor.execute(new_offer_positions,(id,code,name,quantity,price,vat))
+            self.db.con.commit()
+            return True
+        except Exception as e:
+            self.db.con.rollback()
+            print(f"Error {e}")
+            return False
+
+
+    def update_product(self, id_prod, code, name, quantity, price, vat):
+        if not id_prod or not code or not name or not quantity or not price or not vat:
+            print("Error no data")
+            return False
+        try:
+            update_offer_positions = """ 
+                UPDATE offers_positions SET product_code =?, product_name =?, quantity =?, unit_price =?, vat =?  WHERE id =?
+            """
+
+            cursor = self.db.con.cursor()
+            cursor.execute(update_offer_positions,(code,name,quantity,price,vat,id_prod))
+            self.db.con.commit()
+            return True
+        except Exception as e:
+            self.db.con.rollback()
+            print(f"Error {e}")
+            return False
+
+    

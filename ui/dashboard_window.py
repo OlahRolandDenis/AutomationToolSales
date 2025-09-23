@@ -920,23 +920,51 @@ class DashboardWindow(ctk.CTk):
         
     
     def save_offer(self):
-        cif = self.client_cif_entry.get().strip()
-        name = self.client_name_entry.get().strip()
-        address = self.client_address_entry.get().strip()
-        phone = self.client_phone_entry.get().strip()
-
-        if not cif or not name or not address or not phone or not self.current_offer_positions:
-            messagebox.showerror("Error", "Introduce products or CIF")
-            return
-        
-        if self.offer_service.create_offer(cif, name, address, phone, self.current_offer_positions,self.user):
-            messagebox.showinfo("Succes", "Oferta creata")
-            self.clear_offer()
-            self.load_saved_offers()
-        else:
-            messagebox.showerror("Error", "Introduce products or CIF")
-            return
-
+        try:
+            cif = self.client_cif_entry.get() or ""
+            name = self.client_name_entry.get() or ""
+            address = self.client_address_entry.get() or ""
+            phone = self.client_phone_entry.get() or ""
+            
+            cif = cif.strip()
+            name = name.strip()
+            address = address.strip()
+            phone = phone.strip()
+            
+            print(f"Debug - CIF: '{cif}' (len: {len(cif)})")
+            print(f"Debug - Name: '{name}' (len: {len(name)})")
+            print(f"Debug - Address: '{address}' (len: {len(address)})")
+            print(f"Debug - Phone: '{phone}' (len: {len(phone)})")
+            print(f"Debug - Products: {len(self.current_offer_positions)}")
+            
+            if not cif:
+                print("CIF is empty")
+            if not name:
+                print("Name is empty")
+            if not address:
+                print("Address is empty")
+            if not phone:
+                print("Phone is empty")
+            if not self.current_offer_positions:
+                print("No products")
+            
+            if not cif or not name or not address or not phone or not self.current_offer_positions:
+                messagebox.showerror("Error", "Please fill all fields and add at least one product")
+                return
+            
+            print("All fields are filled, proceeding to create offer...")
+            
+            if self.offer_service.create_offer(cif, name, address, phone, self.current_offer_positions, self.user):
+                messagebox.showinfo("Success", "Offer created successfully")
+                self.clear_offer()
+                self.load_saved_offers()
+            else:
+                messagebox.showerror("Error", "Failed to create offer")
+                
+        except Exception as e:
+            messagebox.showerror("Error", f"An error occurred: {str(e)}")
+            print(f"Exception in save_offer: {e}")
+            
     def load_saved_offers(self):
         for item in self.saved_offers_tree.get_children():
             self.saved_offers_tree.delete(item)
@@ -984,8 +1012,7 @@ class DashboardWindow(ctk.CTk):
         self.refresh_products_display()
         self.clear_product_fields()
 
-    def export_sales(self):
-        pass
+    
 
     # def fetch_client_data(self):
     #     cif = self.client_entry.get().strip()
@@ -1031,6 +1058,60 @@ class DashboardWindow(ctk.CTk):
         except Exception as e:
             messagebox.showerror("Error", f"Could not delete sale: {e}")
 
+    def export_sales(self):
     
+        try:
+            # Get current sales data (same as displayed in the tree)
+            sales = self.sales_service.get_sales_by_date(self.user, self.selected_date)
+            
+            if not sales:
+                messagebox.showinfo("Info", "No sales data to export for selected date")
+                return
+            
+            # Open file save dialog
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".csv",
+                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
+                title="Save Sales Export",
+                initialfile=f"sales_{self.selected_date.strftime('%Y-%m-%d')}.csv"
+            )
+            
+            if not file_path:
+                return  # User cancelled
+            
+            # Write to CSV
+            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
+                writer = csv.writer(csvfile)
+                
+                # Write header
+                writer.writerow(['ID', 'Document Number', 'Amount (RON)', 'Date', 'Time', 'User'])
+                
+                # Calculate total for summary
+                total_amount = 0
+                
+                # Write data rows
+                for sale in sales:
+                    dt = datetime.fromisoformat(sale.timestamp)
+                    writer.writerow([
+                        sale.id,
+                        sale.doc,
+                        f"{sale.amount:.2f}",
+                        dt.strftime('%Y-%m-%d'),
+                        dt.strftime('%H:%M:%S'),
+                        self.user.username
+                    ])
+                    total_amount += sale.amount
+                
+                # Write summary row
+                writer.writerow([])  # Empty row
+                writer.writerow(['SUMMARY', '', '', '', '', ''])
+                writer.writerow(['Total Sales:', len(sales), 'Total Amount:', f"{total_amount:.2f} RON", 'Date:', self.selected_date.strftime('%Y-%m-%d')])
+                writer.writerow(['Exported by:', self.user.username, 'Export Date:', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '', ''])
+            
+            messagebox.showinfo("Success", f"Sales exported successfully to:\n{file_path}")
+            
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to export sales:\n{str(e)}")
+
 
 
