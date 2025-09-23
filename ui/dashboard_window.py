@@ -39,10 +39,14 @@ class DashboardWindow(ctk.CTk):
         self.saved_offers = []
         
         self.title(f"Sales & Offers Dashboard - {user.username}")
-        self.geometry("1600x1000")
+        self.geometry("1200x800")
+        self.minsize(1000, 700)
         self.configure(fg_color=self.colors['primary'])
         
         self.create_widgets()
+        self.after_idle(self.initial_data_load)
+
+    def initial_data_load(self):
         self.refresh_sales_list()
         self.load_saved_offers()
         
@@ -120,6 +124,7 @@ class DashboardWindow(ctk.CTk):
         
         self.create_sales_input_panel(content_area)
         self.create_sales_display_panel(content_area)
+        
         
     def create_date_filter_section(self, parent):
         filter_container = ctk.CTkFrame(
@@ -199,16 +204,28 @@ class DashboardWindow(ctk.CTk):
         today_btn.pack(side="left", padx=5)
         
     def create_sales_input_panel(self, parent):
-        input_panel = ctk.CTkFrame(
-            parent, 
-            width=450,
-            fg_color=self.colors['light_gray'],
-            corner_radius=0,
-            border_width=1,
-            border_color=self.colors['secondary']
+
+        scrollable_input = ctk.CTkScrollableFrame(parent, width=400)
+        scrollable_input.pack(side="left", fill="y", padx=(0, 15))
+
+        def on_mousewheel(event):
+            scrollable_input._parent_canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        
+
+        scrollable_input.bind("<MouseWheel>", on_mousewheel)
+        scrollable_input.bind("<Button-4>", lambda e: scrollable_input._parent_canvas.yview_scroll(-1, "units"))
+        scrollable_input.bind("<Button-5>", lambda e: scrollable_input._parent_canvas.yview_scroll(1, "units"))
+
+        scrollable_input.bind_all("<MouseWheel>", on_mousewheel)
+
+        input_panel = ctk.CTkFrame( 
+        scrollable_input,
+        fg_color=self.colors['light_gray'],
+        corner_radius=0,
+        border_width=1,
+        border_color=self.colors['secondary']
         )
-        input_panel.pack(side="left", fill="y", padx=(0, 15))
-        input_panel.pack_propagate(False)
+        input_panel.pack(fill="both", expand=True, padx=10, pady=10)
         
         title_frame = ctk.CTkFrame(
             input_panel, 
@@ -433,6 +450,7 @@ class DashboardWindow(ctk.CTk):
         
         self.sales_tree.pack(side="left", fill="both", expand=True, padx=10, pady=10)
         v_scrollbar.pack(side="right", fill="y", pady=10)
+        self.sales_tree.bind('<Double-1>', self.open_sales_to_delete)
         
     def setup_offers_tab(self):
         offers_container = ctk.CTkFrame(self.offers_tab, fg_color="transparent")
@@ -616,18 +634,6 @@ class DashboardWindow(ctk.CTk):
         )
         add_btn.pack(side="left", padx=5)
         
-        remove_btn = ctk.CTkButton(
-            buttons_frame,
-            text="Remove",
-            command=self.remove_selected_product,
-            width=100,
-            height=50,
-            fg_color=self.colors['dark_gray'],
-            text_color=self.colors['primary'],
-            hover_color=self.colors['text_secondary'],
-            font=("Arial", 11, "bold")
-        )
-        remove_btn.pack(side="left", padx=5)
         
     def create_products_display(self, parent):
         products_panel = ctk.CTkFrame(
@@ -870,23 +876,23 @@ class DashboardWindow(ctk.CTk):
 
 
     
-    def remove_selected_product(self):
+    # def remove_selected_product(self):
 
-        selection = self.products_tree.selection()
-        if not selection:
-            messagebox.showerror("Error", "Select profuct to remove")
-            return
+    #     selection = self.products_tree.selection()
+    #     if not selection:
+    #         messagebox.showerror("Error", "Select profuct to remove")
+    #         return
 
-        item = self.products_tree.item(selection[0])
-        product_code = item['values'][0]
+    #     item = self.products_tree.item(selection[0])
+    #     product_code = item['values'][0]
 
-        new_positions = []
-        for p in self.current_offer_positions:
-            if p['product_code'] != product_code:
-                new_positions.append(p)
+    #     new_positions = []
+    #     for p in self.current_offer_positions:
+    #         if p['product_code'] != product_code:
+    #             new_positions.append(p)
 
-        self.current_offer_positions = new_positions
-        self.refresh_products_display()
+    #     self.current_offer_positions = new_positions
+    #     self.refresh_products_display()
 
     def refresh_products_display(self):
         for item in self.products_tree.get_children():
@@ -959,7 +965,11 @@ class DashboardWindow(ctk.CTk):
         offer_id = item['values'][0]
 
         offers = self.offer_service.get_offers_by_user(self.user)
-        offer_data = next((o for o in offers if o.id == offer_id), None)
+        offer_data = None
+        for o in offers:
+            if o.id == offer_id:
+                offer_data = o
+                break
     
         if offer_data:
             detail_window = OfferDetailWindow(self, offer_data, self.offer_service)
@@ -973,6 +983,9 @@ class DashboardWindow(ctk.CTk):
         self.current_offer_positions = []
         self.refresh_products_display()
         self.clear_product_fields()
+
+    def export_sales(self):
+        pass
 
     # def fetch_client_data(self):
     #     cif = self.client_entry.get().strip()
@@ -994,6 +1007,29 @@ class DashboardWindow(ctk.CTk):
     #             messagebox.showerror("Error", "Could not fetch client data. Check CIF number or try again later.")
     #     except Exception as e:
     #         messagebox.showerror("Error", "Failed to fetch client data")
+
+
+    def open_sales_to_delete(self,event):
+        selection = self.sales_tree.selection()
+        if not selection:
+            messagebox.showerror("Error", "Select sale")
+            return
+
+        if not messagebox.askyesno("Confirm Delete", "Are you sure you want to delete this sale?"):
+            return
+
+        try:
+            item = self.sales_tree.item(selection[0])
+            id = item["values"][0]
+            if not self.sales_service.delete_sale(id):
+                messagebox.showerror("Error", "Could not delete sale")
+                return
+            else:
+                self.refresh_sales_list()
+                messagebox.showinfo("Success", "Sale deleted")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Could not delete sale: {e}")
 
     
 

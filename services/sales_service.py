@@ -160,4 +160,7 @@ class SalesService:
         except Exception as e:
             print(f"Error {e}")
             return []
-        
+    
+
+    def delete_sale():
+        pass
