@@ -1,0 +1,3 @@
+([('SalesApp',
+   '/Users/rolandolah/Desktop/sales_app/build/dist/SalesApp',
+   'EXECUTABLE')],)

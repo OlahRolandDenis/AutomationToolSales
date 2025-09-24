@@ -1,0 +1,66 @@
+name: Build Sales App
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Permite rularea manuală
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest, macos-latest]
+        
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.11'
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+        
+    - name: Build Windows executable
+      if: matrix.os == 'windows-latest'
+      run: |
+        pyinstaller --onefile --windowed --name=SalesApp --add-data="utils/logo.png;utils" --hidden-import=customtkinter --hidden-import=CTkMessagebox --hidden-import=reportlab --hidden-import=bcrypt --hidden-import=sqlite3 main.py
+        
+    - name: Build macOS executable  
+      if: matrix.os == 'macos-latest'
+      run: |
+        pyinstaller --onefile --windowed --name=SalesApp --add-data="utils/logo.png:utils" --hidden-import=customtkinter --hidden-import=CTkMessagebox --hidden-import=reportlab --hidden-import=bcrypt --hidden-import=sqlite3 main.py
+        
+    - name: Upload Windows artifact
+      if: matrix.os == 'windows-latest'
+      uses: actions/upload-artifact@v3
+      with:
+        name: SalesApp-Windows
+        path: dist/SalesApp.exe
+        
+    - name: Upload macOS artifact
+      if: matrix.os == 'macos-latest' 
+      uses: actions/upload-artifact@v3
+      with:
+        name: SalesApp-macOS
+        path: dist/SalesApp
+        
+    - name: Create Release
+      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v1.0.${{ github.run_number }}
+        release_name: Release v1.0.${{ github.run_number }}
+        draft: false
+        prerelease: false

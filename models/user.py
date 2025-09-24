@@ -1,7 +1,6 @@
 class User :
-    def __init__(self,username,email,password_hash,is_admin,id = None):
+    def __init__(self,username,password_hash,is_admin,id = None):
         self.username = username
-        self.email = email
         self.password_hash = password_hash
         self.id = id
         self.is_admin = is_admin

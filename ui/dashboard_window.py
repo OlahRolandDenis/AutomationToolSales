@@ -9,6 +9,12 @@ from tkcalendar import DateEntry
 from ui.offer_window import OfferDetailWindow
 from services.get_client_data import ClientData
 import tkinter as tk
+from reportlab.lib.pagesizes import A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import cm
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_LEFT, TA_CENTER
 
 ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
@@ -353,10 +359,10 @@ class DashboardWindow(ctk.CTk):
         )
         save_btn.pack(pady=(0, 10))
         
-        export_btn = ctk.CTkButton(
+        export_day_btn = ctk.CTkButton(
             buttons_frame,
-            text="Export Sales CSV",
-            command=self.export_sales,
+            text="Export Day PDF",
+            command=self.export_day_pdf,
             width=410,
             height=40,
             font=("Arial", 12),
@@ -364,7 +370,20 @@ class DashboardWindow(ctk.CTk):
             text_color=self.colors['primary'],
             hover_color=self.colors['text_secondary']
         )
-        export_btn.pack()
+        export_day_btn.pack(pady=(0, 5))
+
+        export_month_btn = ctk.CTkButton(
+            buttons_frame,
+            text="Export Month PDF",
+            command=self.export_month_pdf,
+            width=410,
+            height=40,
+            font=("Arial", 12),
+            fg_color=self.colors['accent'],
+            text_color=self.colors['primary'],
+            hover_color=self.colors['text_secondary']
+        )
+        export_month_btn.pack()
         
         self.doc_entry.bind('<Tab>', lambda e: (self.amount_entry.focus_set(), 'break')[1])
         self.amount_entry.bind('<Return>', lambda e: self.save_sale())
@@ -617,6 +636,7 @@ class DashboardWindow(ctk.CTk):
         ctk.CTkLabel(row2, text="VAT %:", width=80, font=("Arial", 11, "bold")).pack(side="left", padx=5)
         self.vat_entry = ctk.CTkEntry(row2, width=100, height=35, border_width=1, border_color=self.colors['secondary'])
         self.vat_entry.pack(side="left", padx=5)
+        self.vat_entry.insert(0, "21")
         
         buttons_frame = ctk.CTkFrame(row2, fg_color="transparent")
         buttons_frame.pack(side="right", padx=20)
@@ -917,6 +937,7 @@ class DashboardWindow(ctk.CTk):
         self.quantity_entry.delete(0, 'end')
         self.unit_price_entry.delete(0, 'end')
         self.vat_entry.delete(0, 'end')
+        self.vat_entry.insert(0, "21")
         
     
     def save_offer(self):
@@ -1058,10 +1079,9 @@ class DashboardWindow(ctk.CTk):
         except Exception as e:
             messagebox.showerror("Error", f"Could not delete sale: {e}")
 
-    def export_sales(self):
-    
+    def export_day_pdf(self):
+        """Export sales for selected day to PDF"""
         try:
-            # Get current sales data (same as displayed in the tree)
             sales = self.sales_service.get_sales_by_date(self.user, self.selected_date)
             
             if not sales:
@@ -1070,48 +1090,216 @@ class DashboardWindow(ctk.CTk):
             
             # Open file save dialog
             file_path = filedialog.asksaveasfilename(
-                defaultextension=".csv",
-                filetypes=[("CSV files", "*.csv"), ("All files", "*.*")],
-                title="Save Sales Export",
-                initialfile=f"sales_{self.selected_date.strftime('%Y-%m-%d')}.csv"
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Save Daily Sales Report",
+                initialfile=f"daily_sales_{self.selected_date.strftime('%Y-%m-%d')}.pdf"
             )
             
             if not file_path:
-                return  # User cancelled
+                return
             
-            # Write to CSV
-            with open(file_path, 'w', newline='', encoding='utf-8') as csvfile:
-                writer = csv.writer(csvfile)
-                
-                # Write header
-                writer.writerow(['ID', 'Document Number', 'Amount (RON)', 'Date', 'Time', 'User'])
-                
-                # Calculate total for summary
-                total_amount = 0
-                
-                # Write data rows
-                for sale in sales:
-                    dt = datetime.fromisoformat(sale.timestamp)
-                    writer.writerow([
-                        sale.id,
-                        sale.doc,
-                        f"{sale.amount:.2f}",
-                        dt.strftime('%Y-%m-%d'),
-                        dt.strftime('%H:%M:%S'),
-                        self.user.username
-                    ])
-                    total_amount += sale.amount
-                
-                # Write summary row
-                writer.writerow([])  # Empty row
-                writer.writerow(['SUMMARY', '', '', '', '', ''])
-                writer.writerow(['Total Sales:', len(sales), 'Total Amount:', f"{total_amount:.2f} RON", 'Date:', self.selected_date.strftime('%Y-%m-%d')])
-                writer.writerow(['Exported by:', self.user.username, 'Export Date:', datetime.now().strftime('%Y-%m-%d %H:%M:%S'), '', ''])
+            doc = SimpleDocTemplate(file_path, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm)
+            styles = getSampleStyleSheet()
+            story = []
             
-            messagebox.showinfo("Success", f"Sales exported successfully to:\n{file_path}")
+            # Title
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                alignment=TA_CENTER,
+                spaceAfter=20
+            )
+            story.append(Paragraph(f"Daily Sales Report", title_style))
+            
+            # Header info
+            header_style = ParagraphStyle(
+                'HeaderStyle',
+                parent=styles['Normal'],
+                fontSize=12,
+                alignment=TA_LEFT,
+                spaceAfter=10
+            )
+            
+            story.append(Paragraph(f"<b>User:</b> {self.user.username}", header_style))
+            story.append(Paragraph(f"<b>Date:</b> {self.selected_date.strftime('%A, %B %d, %Y')}", header_style))
+            story.append(Paragraph(f"<b>Total Sales:</b> {len(sales)}", header_style))
+            
+            total_amount = sum(sale.amount for sale in sales)
+            story.append(Paragraph(f"<b>Total Amount:</b> {total_amount:.2f} RON", header_style))
+            story.append(Spacer(1, 20))
+            
+            # Sales table
+            data = [['Nr.', 'Document', 'Amount (RON)', 'Time']]
+            
+            for idx, sale in enumerate(sales, 1):
+                dt = datetime.fromisoformat(sale.timestamp)
+                data.append([
+                    str(idx),
+                    sale.doc,
+                    f"{sale.amount:.2f}",
+                    dt.strftime('%H:%M:%S')
+                ])
+            
+            table = Table(data, colWidths=[1*cm, 8*cm, 3*cm, 3*cm])
+            table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
+                ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('ALIGN', (1, 1), (1, -1), 'LEFT'),  # Document column left aligned
+                ('ALIGN', (2, 1), (2, -1), 'RIGHT'),  # Amount column right aligned
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('FONTSIZE', (0, 0), (-1, 0), 10),
+                ('FONTSIZE', (0, 1), (-1, -1), 9),
+                ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+                ('BACKGROUND', (0, 1), (-1, -1), colors.beige),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black)
+            ]))
+            
+            story.append(table)
+            story.append(Spacer(1, 20))
+            
+            # Summary
+            summary_style = ParagraphStyle(
+                'SummaryStyle',
+                parent=styles['Normal'],
+                fontSize=12,
+                alignment=TA_CENTER,
+                spaceAfter=10
+            )
+            story.append(Paragraph(f"<b>TOTAL: {total_amount:.2f} RON</b>", summary_style))
+            story.append(Paragraph(f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+            
+            doc.build(story)
+            messagebox.showinfo("Success", f"Daily sales report exported to:\n{file_path}")
             
         except Exception as e:
-            messagebox.showerror("Export Error", f"Failed to export sales:\n{str(e)}")
+            messagebox.showerror("Export Error", f"Failed to export daily sales:\n{str(e)}")
 
+
+    def export_month_pdf(self):
+        """Export sales for selected month to PDF"""
+        try:
+            # Get first and last day of the month
+            first_day = self.selected_date.replace(day=1)
+            if self.selected_date.month == 12:
+                last_day = self.selected_date.replace(year=self.selected_date.year + 1, month=1, day=1) - timedelta(days=1)
+            else:
+                last_day = self.selected_date.replace(month=self.selected_date.month + 1, day=1) - timedelta(days=1)
+            
+            # Get all sales for the month
+            all_month_sales = []
+            current_date = first_day
+            
+            while current_date <= last_day:
+                daily_sales = self.sales_service.get_sales_by_date(self.user, current_date)
+                if daily_sales:
+                    all_month_sales.append((current_date, daily_sales))
+                current_date += timedelta(days=1)
+            
+            if not all_month_sales:
+                messagebox.showinfo("Info", "No sales data to export for selected month")
+                return
+            
+            # Open file save dialog
+            file_path = filedialog.asksaveasfilename(
+                defaultextension=".pdf",
+                filetypes=[("PDF files", "*.pdf")],
+                title="Save Monthly Sales Report",
+                initialfile=f"monthly_sales_{self.selected_date.strftime('%Y-%m')}.pdf"
+            )
+            
+            if not file_path:
+                return
+            
+            doc = SimpleDocTemplate(file_path, pagesize=A4, topMargin=2*cm, bottomMargin=2*cm)
+            styles = getSampleStyleSheet()
+            story = []
+            
+            # Title
+            title_style = ParagraphStyle(
+                'CustomTitle',
+                parent=styles['Heading1'],
+                fontSize=18,
+                alignment=TA_CENTER,
+                spaceAfter=20
+            )
+            story.append(Paragraph(f"Monthly Sales Report", title_style))
+            
+            # Header info
+            header_style = ParagraphStyle(
+                'HeaderStyle',
+                parent=styles['Normal'],
+                fontSize=12,
+                alignment=TA_LEFT,
+                spaceAfter=10
+            )
+            
+            story.append(Paragraph(f"<b>User:</b> {self.user.username}", header_style))
+            story.append(Paragraph(f"<b>Month:</b> {self.selected_date.strftime('%B %Y')}", header_style))
+            
+            total_days_with_sales = len(all_month_sales)
+            total_sales_count = sum(len(daily_sales) for _, daily_sales in all_month_sales)
+            total_month_amount = sum(sale.amount for _, daily_sales in all_month_sales for sale in daily_sales)
+            
+            story.append(Paragraph(f"<b>Days with Sales:</b> {total_days_with_sales}", header_style))
+            story.append(Paragraph(f"<b>Total Sales:</b> {total_sales_count}", header_style))
+            story.append(Paragraph(f"<b>Total Amount:</b> {total_month_amount:.2f} RON", header_style))
+            story.append(Spacer(1, 20))
+            
+            # Daily breakdown
+            day_style = ParagraphStyle(
+                'DayStyle',
+                parent=styles['Heading2'],
+                fontSize=14,
+                alignment=TA_LEFT,
+                spaceAfter=10,
+                spaceBefore=15
+            )
+            
+            normal_style = ParagraphStyle(
+                'NormalStyle',
+                parent=styles['Normal'],
+                fontSize=10,
+                alignment=TA_LEFT,
+                spaceAfter=5
+            )
+            
+            for date, daily_sales in all_month_sales:
+                # Day header
+                daily_total = sum(sale.amount for sale in daily_sales)
+                story.append(Paragraph(
+                    f"{date.strftime('%A, %B %d, %Y')} - {len(daily_sales)} sales - {daily_total:.2f} RON", 
+                    day_style
+                ))
+                
+                # Sales for that day
+                for idx, sale in enumerate(daily_sales, 1):
+                    dt = datetime.fromisoformat(sale.timestamp)
+                    story.append(Paragraph(
+                        f"&nbsp;&nbsp;&nbsp;&nbsp;{idx}. {sale.doc} - {sale.amount:.2f} RON ({dt.strftime('%H:%M')})", 
+                        normal_style
+                    ))
+                
+                story.append(Spacer(1, 10))
+            
+            # Final summary
+            summary_style = ParagraphStyle(
+                'SummaryStyle',
+                parent=styles['Normal'],
+                fontSize=12,
+                alignment=TA_CENTER,
+                spaceAfter=10,
+                spaceBefore=20
+            )
+            story.append(Paragraph(f"<b>MONTHLY TOTAL: {total_month_amount:.2f} RON</b>", summary_style))
+            story.append(Paragraph(f"Generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", styles['Normal']))
+            
+            doc.build(story)
+            messagebox.showinfo("Success", f"Monthly sales report exported to:\n{file_path}")
+            
+        except Exception as e:
+            messagebox.showerror("Export Error", f"Failed to export monthly sales:\n{str(e)}")
 
 

@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from tkinter import messagebox
 
 class RegistrationWindow(ctk.CTk):
     def __init__(self, auth_service, parent_window, on_registration_success=None):
@@ -24,14 +25,6 @@ class RegistrationWindow(ctk.CTk):
         )
         self.username_entry.pack(pady=10)
         
-        self.email_entry = ctk.CTkEntry(
-            master=frame, 
-            placeholder_text="Email",
-            width=200, height=35,
-            fg_color="#fafafa",
-            text_color="#2b2a2a"
-        )
-        self.email_entry.pack(pady=10)
         
         self.password_entry = ctk.CTkEntry(
             master=frame, 
@@ -79,33 +72,29 @@ class RegistrationWindow(ctk.CTk):
         self.destroy()
 
     def handle_register(self):
-        email = self.email_entry.get()
         username = self.username_entry.get()
         password = self.password_entry.get()
         confirm_password = self.confirm_password_entry.get()
 
         if not username :
-            ctk.CTkMessagebox.showerror("Error", "Please enter username.")
-            return
-        if not email :
-            ctk.CTkMessagebox.showerror("Error", "Please enter email.")
+            messagebox.showerror("Error", "Please enter username.")
             return
         if not password :
-            ctk.CTkMessagebox.showerror("Error", "Please enter password.")
+            messagebox.showerror("Error", "Please enter password.")
             return
         if not confirm_password :
-            ctk.CTkMessagebox.showerror("Error", "Please enter confirm password.")
+            messagebox.showerror("Error", "Please enter confirm password.")
             return
         if password != confirm_password:
-            ctk.CTkMessagebox.showerror("Error", "Passwords doesn't match.")
+            messagebox.showerror("Error", "Passwords doesn't match.")
             return
         
-        status = self.auth_service.register_user(username, email, password, False)
+        status = self.auth_service.register_user(username, password, False)
 
         if status == False:
-            ctk.CTkMessagebox.showerror("Error", "Registration failed. Username may already exist.")
+            messagebox.showerror("Error", "Registration failed. Username may already exist.")
         else:
-            ctk.CTkMessagebox.showinfo("Success", "Registration successful! You can now log in.")
+            messagebox.showinfo("Success", "Registration successful! You can now log in.")
             self.parent_window.deiconify()
             self.destroy()
         

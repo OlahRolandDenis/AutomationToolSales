@@ -7,7 +7,7 @@ class AuthService:
     def __init__(self, db_instance):
         self.db = db_instance
 
-    def register_user(self, username, email, password,is_admin):
+    def register_user(self, username, password, is_admin):
         salt = bcrypt.gensalt()
         password_en = password.encode('utf-8')
         password_hash = bcrypt.hashpw(password_en,salt)
@@ -15,11 +15,11 @@ class AuthService:
             
 
             insert_new_user = """ 
-            INSERT INTO users (username, email, password_hash, is_admin)
-            VALUES(?, ?, ?, ?);
+            INSERT INTO users (username, password_hash, is_admin)
+            VALUES(?, ?, ?);
             """
 
-            values = (username, email, password_hash, is_admin)
+            values = (username, password_hash, is_admin)
 
             self.db.con.execute(insert_new_user,values )
             self.db.con.commit()
@@ -32,7 +32,7 @@ class AuthService:
             print(f"Error: {e}")
             return False
 
-    def login_user(self, username, password):
+    def login_user(self, username):
         try:
             cursor = self.db.con.cursor()
             new_query = """ 
@@ -44,17 +44,12 @@ class AuthService:
             if user_data == None:
                 return None
 
-            user_id, username_db, email_db, password_hash_db, is_admin_db = user_data
+            user_id, username_db, password_hash_db, is_admin_db = user_data
 
-            if bcrypt.checkpw(password.encode('utf-8'),password_hash_db) == True:
-                print("User logged in succesfully")
-                new_user = User(username_db,email_db, password_hash_db,bool(is_admin_db),user_id )
-                return new_user
-            else:
-                print("Wrong password")
-                return None
-
-
+            
+            print("User logged in succesfully")
+            new_user = User(username_db, password_hash_db,bool(is_admin_db),user_id )
+            return new_user
         except Exception as e:
             print(f"Error: {e}")
             return None

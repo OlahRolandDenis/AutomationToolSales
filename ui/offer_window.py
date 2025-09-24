@@ -161,6 +161,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
         ctk.CTkLabel(form_frame, text="VAT %:", font=("Arial", 11, "bold")).pack(anchor="w", pady=(0, 5))
         self.product_vat_entry = ctk.CTkEntry(form_frame, width=350, height=35)
         self.product_vat_entry.pack(pady=(0, 10))
+        self.product_vat_entry.insert(0, "21")
     
     def create_action_buttons(self, parent):
         buttons_frame = ctk.CTkFrame(parent, fg_color="transparent")
@@ -233,6 +234,17 @@ class OfferDetailWindow(ctk.CTkToplevel):
             text_color=self.colors['secondary']
         )
         export_header.pack(pady=(10, 15))
+
+        preview_btn = ctk.CTkButton(
+            export_frame,
+            text="Preview Offer",
+            command=self.preview_offer_document,
+            width=340,
+            height=40,
+            fg_color=self.colors['text_secondary'],
+            hover_color=self.colors['dark_gray']
+        )
+        preview_btn.pack(pady=5)
         
         offer_doc_btn = ctk.CTkButton(
             export_frame,
@@ -461,6 +473,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
         values = item['values']
 
         self.clear_form()
+        self.product_vat_entry.delete(0, "end")
 
             
         self.product_code_entry.insert(0, values[1])
@@ -475,6 +488,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
         self.product_quantity_entry.delete(0, 'end')
         self.product_unit_price_entry.delete(0, 'end')
         self.product_vat_entry.delete(0, 'end')
+        self.product_vat_entry.insert(0, "21")
 
     def generate_invoice_number(self):
         return str(random.randint(1000000,9999999))
@@ -498,18 +512,18 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
 
     from reportlab.lib.pagesizes import A4
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
-    from reportlab.lib import colors
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+    from reportlab.lib.enums import TA_LEFT, TA_RIGHT
+    from reportlab.lib import colors
     from reportlab.lib.units import cm
-    from datetime import datetime
     from tkinter import filedialog, messagebox
+    from datetime import datetime
 
     def generate_offer_document(self):
-        """Generate professional offer document identical to reference image (with logo)"""
+        """Generate professional offer document with real offer data"""
         try:
-            # Save file dialog
+            # === Save file dialog ===
             file_path = filedialog.asksaveasfilename(
                 defaultextension=".pdf",
                 filetypes=[("PDF files", "*.pdf")],
@@ -520,35 +534,36 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
             doc = SimpleDocTemplate(file_path, pagesize=A4, topMargin=1*cm, bottomMargin=1*cm)
             styles = getSampleStyleSheet()
+            normal = styles["Normal"]
+
             story = []
 
-            # === HEADER COMPANIE ===
+            # === HEADER STÂNGA (companie) ===
             header_left = [
-                [Paragraph("<b>SC AUTO & AGRO MAGMANN SRL</b>", styles['Normal'])],
-                [Paragraph(f"Nr.ord.reg.com.: {self.company_data['registration_number']}", styles['Normal'])],
-                [Paragraph(f"C.I.F.: {self.company_data['cif']}", styles['Normal'])],
-                [Paragraph(f"Sediul: {self.company_data['address']}", styles['Normal'])],
-                [Paragraph(f"Contul: {self.company_data['account']}", styles['Normal'])],
-                [Paragraph(f"Banca: {self.company_data['bank']}", styles['Normal'])],
-                [Paragraph("Contul: RO70INGB0000999908841201", styles['Normal'])],
-                [Paragraph("Banca: ING BANK ARAD", styles['Normal'])],
-                [Paragraph(f"Capital social (RON): {self.company_data['capital']}", styles['Normal'])],
-                [Paragraph(f"Telefon: {self.company_data['phone']}", styles['Normal'])],
+                [Paragraph("<b>SC AUTO & AGRO MAGMANN SRL</b>", normal)],
+                [Paragraph(f"Nr.ord.reg.com.: {self.company_data['registration_number']}", normal)],
+                [Paragraph(f"C.I.F.: {self.company_data['cif']}", normal)],
+                [Paragraph(f"Sediul: {self.company_data['address']}", normal)],
+                [Spacer(1, 3)],
+                [Paragraph(f"Contul: {self.company_data['account']}", normal)],
+                [Paragraph(f"Banca: {self.company_data['bank']}", normal)],
+                [Paragraph("Contul: RO70INGB0000999908841201", normal)],
+                [Paragraph("Banca: ING BANK ARAD", normal)],
+                [Spacer(1, 3)],
+                [Paragraph("<b>Capital social (RON):</b> " + str(self.company_data['capital']), normal)],
+                [Paragraph("<b>Telefon:</b> " + self.company_data['phone'], normal)]
             ]
 
-            # === Logo + info dreapta ===
-            logo_path = "utils/logo.png"  # aici pui path-ul real către logo-ul tău
-            logo = Image(logo_path, width=3*cm, height=3*cm)
+            # === HEADER DREAPTA (logo + info) - folosind ID-ul ofertei ===
+            logo_path = "utils/logo.png"
+            logo = Image(logo_path, width=7*cm, height=3.2*cm)
 
             header_right = [
                 [logo],
-                [Paragraph("<b>AGRO MAGMANN</b>", styles['Normal'])],
-                [Paragraph("www.agromagmann.ro", styles['Normal'])],
-                [Paragraph("<b>OFERTA DE PRET</b>", styles['Normal'])],
-                [Paragraph("Seria MAG", styles['Normal'])],
-                [Paragraph(f"Factura nr. {self.generate_invoice_number()}", styles['Normal'])],
-                [Paragraph(f"Data: {datetime.now().strftime('%d/%m/%Y')}", styles['Normal'])],
-                [Paragraph(f"Pozitii factura: {len(self.offer.products) if hasattr(self.offer, 'products') else 0}", styles['Normal'])]
+                [Paragraph("<b>OFERTA DE PRET</b>", normal)],
+                [Paragraph("Seria MAG", normal)],
+                [Paragraph(f"Oferta nr. {self.offer.id}", normal)],  # Folosind ID-ul ofertei
+                [Paragraph(f"Data: {datetime.now().strftime('%d/%m/%Y')}", normal)]
             ]
 
             company_table = Table([[header_left, header_right]], colWidths=[10*cm, 7*cm])
@@ -558,19 +573,18 @@ class OfferDetailWindow(ctk.CTkToplevel):
                 ('FONTSIZE', (0, 0), (-1, -1), 8),
             ]))
             story.append(company_table)
-            story.append(Spacer(1, 10))
+            story.append(Spacer(1, 12))
 
-            # === CLIENT ===
+            # === CLIENT - folosind datele reale din ofertă ===
             client_title = Paragraph("<i>Cumparator - Client</i>", ParagraphStyle(
                 'ClientTitle', fontSize=9, textColor=colors.grey, alignment=TA_LEFT
             ))
             story.append(client_title)
 
             client_data = [
-                [f"{getattr(self.offer, 'client_name', 'ZETOR TRACTOR SRL')}", "", "", f"C.I.F. {self.offer.cif}"],
-                [f"Adresa: {getattr(self.offer, 'client_address', 'STR. CARTIERUL NOU 19')}", "", "", "Nr.reg.com.:"],
-                [f"Tara/Localitate: RO / {getattr(self.offer, 'client_city', 'NADLAC')} Judetul: ARAD", "", "", "Contul:"],
-                [f"Adresa de livrare: IDEM", "", "", f"Telefon: {getattr(self.offer, 'client_phone', '0726353544')}"],
+                [f"Nume: {self.offer.name}", "", "", f"C.I.F. {self.offer.cif}"],
+                [f"Adresa: {self.offer.address}", "", "", "Nr.reg.com.:"],
+                [f"Adresa de livrare: IDEM", "", "", f"Telefon: {self.offer.phone}"],
             ]
 
             client_table = Table(client_data, colWidths=[9*cm, 2*cm, 2*cm, 5*cm])
@@ -584,10 +598,23 @@ class OfferDetailWindow(ctk.CTkToplevel):
             story.append(Spacer(1, 15))
 
             # === PRODUSE ===
+            header_style = ParagraphStyle(
+                'HeaderStyle',
+                fontSize=7,
+                alignment=TA_CENTER,
+                leading=8,
+                wordWrap='CJK'
+            )
+
             products_header = [[
-                'Nr crt.', 'Denumirea produselor sau a serviciilor', 'U.M.',
-                'Cantitate', 'Pret unitar fara TVA RON', 'Valoare fara TVA RON',
-                'Cota TVA %', 'Valoare T.V.A. RON'
+                Paragraph('Nr crt.', header_style),
+                Paragraph('Denumirea produselor sau a serviciilor', header_style),
+                Paragraph('U.M.', header_style),
+                Paragraph('Cantitate', header_style),
+                Paragraph('Pret unitar fara TVA RON', header_style),
+                Paragraph('Valoare fara TVA RON', header_style),
+                Paragraph('Cota TVA %', header_style),
+                Paragraph('Valoare T.V.A. RON', header_style)
             ]]
 
             totals = self.calculate_total_price()
@@ -618,17 +645,14 @@ class OfferDetailWindow(ctk.CTkToplevel):
                 "", "", "", "", "TOTAL RON:", "", "", f"{totals['final_total']:.2f}"
             ])
 
-            products_table = Table(products_header,
-                                colWidths=[1.2*cm, 6*cm, 1.2*cm, 2*cm, 3*cm, 3*cm, 1.5*cm, 2.5*cm])
+            products_table = Table(products_header, colWidths=[1.2*cm, 6*cm, 1.2*cm, 2*cm, 3*cm, 3*cm, 1.5*cm, 2.5*cm])
             products_table.setStyle(TableStyle([
                 # Header
-                ('BACKGROUND', (0, 0), (-1, 0), colors.lightgrey),
+                ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.8, 1, 0.8, alpha=0.5)),  # verde pastel
                 ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('ALIGN', (0, 0), (-1, 0), 'CENTER'),
                 ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
-                ('FONTSIZE', (0, 0), (-1, 0), 8),
 
-                # Rows
+                # Linii
                 ('ALIGN', (0, 1), (0, -1), 'CENTER'),
                 ('ALIGN', (2, 1), (7, -1), 'CENTER'),
                 ('ALIGN', (1, 1), (1, -3), 'LEFT'),
@@ -646,7 +670,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
             story.append(products_table)
 
-            # Build PDF
+            # === BUILD PDF ===
             doc.build(story)
             messagebox.showinfo("Success", f"Offer document generated successfully at {file_path}")
 
@@ -654,7 +678,185 @@ class OfferDetailWindow(ctk.CTkToplevel):
             messagebox.showerror("Error", f"Failed to generate offer document: {str(e)}")
 
 
-        
+    def preview_offer_document(self):
+        """Generate and open offer document for preview without saving dialog"""
+        try:
+            # Create temporary file path
+            import tempfile
+            import subprocess
+            import sys
+            import platform
+            
+            # Generate temporary PDF file
+            temp_dir = tempfile.gettempdir()
+            temp_filename = f"offer_preview_{self.offer.id}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf"
+            file_path = os.path.join(temp_dir, temp_filename)
+
+            doc = SimpleDocTemplate(file_path, pagesize=A4, topMargin=1*cm, bottomMargin=1*cm)
+            styles = getSampleStyleSheet()
+            normal = styles["Normal"]
+
+            story = []
+
+            # === HEADER STÂNGA (companie) ===
+            header_left = [
+                [Paragraph("<b>SC AUTO & AGRO MAGMANN SRL</b>", normal)],
+                [Paragraph(f"Nr.ord.reg.com.: {self.company_data['registration_number']}", normal)],
+                [Paragraph(f"C.I.F.: {self.company_data['cif']}", normal)],
+                [Paragraph(f"Sediul: {self.company_data['address']}", normal)],
+                [Spacer(1, 3)],
+                [Paragraph(f"Contul: {self.company_data['account']}", normal)],
+                [Paragraph(f"Banca: {self.company_data['bank']}", normal)],
+                [Paragraph("Contul: RO70INGB0000999908841201", normal)],
+                [Paragraph("Banca: ING BANK ARAD", normal)],
+                [Spacer(1, 3)],
+                [Paragraph("<b>Capital social (RON):</b> " + str(self.company_data['capital']), normal)],
+                [Paragraph("<b>Telefon:</b> " + self.company_data['phone'], normal)]
+            ]
+
+            # === HEADER DREAPTA (logo + info) ===
+            logo_path = "utils/logo.png"
+            
+            # Check if logo exists, if not create placeholder
+            if os.path.exists(logo_path):
+                logo = Image(logo_path, width=7*cm, height=3.2*cm)
+            else:
+                # Create a placeholder if logo doesn't exist
+                logo = Paragraph("<b>[LOGO]</b>", ParagraphStyle('LogoPlaceholder', fontSize=14, alignment=TA_CENTER))
+
+            header_right = [
+                [logo],
+                [Paragraph("<b>OFERTA DE PRET</b>", normal)],
+                [Paragraph("Seria MAG", normal)],
+                [Paragraph(f"Oferta nr. {self.offer.id}", normal)],
+                [Paragraph(f"Data: {datetime.now().strftime('%d/%m/%Y')}", normal)]
+            ]
+
+            company_table = Table([[header_left, header_right]], colWidths=[10*cm, 7*cm])
+            company_table.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+                ('ALIGN', (1, 0), (1, -1), 'RIGHT'),
+                ('FONTSIZE', (0, 0), (-1, -1), 8),
+            ]))
+            story.append(company_table)
+            story.append(Spacer(1, 12))
+
+            # === CLIENT ===
+            client_title = Paragraph("<i>Cumparator - Client</i>", ParagraphStyle(
+                'ClientTitle', fontSize=9, textColor=colors.grey, alignment=TA_LEFT
+            ))
+            story.append(client_title)
+
+            client_data = [
+                [f"Nume: {self.offer.name}", "", "", f"C.I.F. {self.offer.cif}"],
+                [f"Adresa: {self.offer.address}", "", "", "Nr.reg.com.:"],
+                [f"Adresa de livrare: IDEM", "", "", f"Telefon: {self.offer.phone}"],
+            ]
+
+            client_table = Table(client_data, colWidths=[9*cm, 2*cm, 2*cm, 5*cm])
+            client_table.setStyle(TableStyle([
+                ('FONTSIZE', (0, 0), (-1, -1), 9),
+                ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.grey),
+                ('VALIGN', (0, 0), (-1, -1), 'TOP'),
+            ]))
+            story.append(client_table)
+            story.append(Spacer(1, 15))
+
+            # === PRODUSE ===
+            header_style = ParagraphStyle(
+                'HeaderStyle',
+                fontSize=7,
+                alignment=TA_CENTER,
+                leading=8,
+                wordWrap='CJK'
+            )
+
+            products_header = [[
+                Paragraph('Nr crt.', header_style),
+                Paragraph('Denumirea produselor sau a serviciilor', header_style),
+                Paragraph('U.M.', header_style),
+                Paragraph('Cantitate', header_style),
+                Paragraph('Pret unitar fara TVA RON', header_style),
+                Paragraph('Valoare fara TVA RON', header_style),
+                Paragraph('Cota TVA %', header_style),
+                Paragraph('Valoare T.V.A. RON', header_style)
+            ]]
+
+            totals = self.calculate_total_price()
+
+            if hasattr(self.offer, 'products') and self.offer.products:
+                for idx, product in enumerate(self.offer.products, 1):
+                    value_without_vat = product.quantity * product.unit_price
+                    vat_value = value_without_vat * (product.vat / 100)
+
+                    products_header.append([
+                        str(idx),
+                        f"{product.product_code} - {product.product_name}",
+                        "BUC",
+                        f"{product.quantity:.4f}",
+                        f"{product.unit_price:.4f}",
+                        f"{value_without_vat:.2f}",
+                        str(int(product.vat)),
+                        f"{vat_value:.2f}"
+                    ])
+
+            # Subtotal + TVA
+            products_header.append([
+                "", "", "", "", "", f"{totals['subtotal']:.2f}", "", f"{totals['vat_total']:.2f}"
+            ])
+
+            # Total RON
+            products_header.append([
+                "", "", "", "", "TOTAL RON:", "", "", f"{totals['final_total']:.2f}"
+            ])
+
+            products_table = Table(products_header, colWidths=[1.2*cm, 6*cm, 1.2*cm, 2*cm, 3*cm, 3*cm, 1.5*cm, 2.5*cm])
+            products_table.setStyle(TableStyle([
+                # Header
+                ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.8, 1, 0.8, alpha=0.5)),
+                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                ('VALIGN', (0, 0), (-1, 0), 'MIDDLE'),
+
+                # Linii
+                ('ALIGN', (0, 1), (0, -1), 'CENTER'),
+                ('ALIGN', (2, 1), (7, -1), 'CENTER'),
+                ('ALIGN', (1, 1), (1, -3), 'LEFT'),
+                ('FONTSIZE', (0, 1), (-1, -1), 8),
+
+                # Totals
+                ('FONTNAME', (0, -2), (-1, -1), 'Helvetica-Bold'),
+                ('BACKGROUND', (0, -2), (-1, -2), colors.whitesmoke),
+                ('BACKGROUND', (0, -1), (-1, -1), colors.whitesmoke),
+
+                # Borders
+                ('BOX', (0, 0), (-1, -1), 1, colors.black),
+                ('INNERGRID', (0, 0), (-1, -1), 0.5, colors.grey),
+            ]))
+
+            story.append(products_table)
+
+            # === BUILD PDF ===
+            doc.build(story)
+            
+            # Open the PDF with default system viewer
+            try:
+                system = platform.system()
+                if system == "Darwin":  # macOS
+                    subprocess.run(["open", file_path])
+                elif system == "Windows":
+                    os.startfile(file_path)
+                else:  # Linux and others
+                    subprocess.run(["xdg-open", file_path])
+                
+                #messagebox.showinfo("Preview", "Offer preview opened in default PDF viewer")
+                
+            except Exception as open_error:
+                messagebox.showwarning("Preview", f"PDF created but couldn't open automatically.\nFile location: {file_path}")
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to generate offer preview: {str(e)}")
+                
 
 
 
@@ -670,22 +872,22 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
 
 
+
+
+                
+
+            
+
+
+            
+
+
+                
 
 
             
 
         
-
-
-        
-
-
-            
-
-
-        
-
-    
 
 
 

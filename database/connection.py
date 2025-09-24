@@ -16,7 +16,6 @@ class Database:
         CREATE TABLE if NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         username TEXT UNIQUE,
-        email TEXT,
         password_hash TEXT,
         is_admin BOOLEAN DEFAULT 0
         )
