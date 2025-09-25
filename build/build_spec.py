@@ -15,7 +15,7 @@ main_path = os.path.join(project_root, 'main.py')
 build_args = [
     '--name=SalesApp',
     '--onefile',
-    '--windowed',
+    '--console',
     '--clean',
     '--noconfirm',
     f'--add-data={logo_path}:utils',  # Colon for Mac/Linux, semicolon for Windows
