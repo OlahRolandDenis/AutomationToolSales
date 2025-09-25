@@ -1,7 +1,22 @@
 import sqlite3
 import os
+import sys
 
-DB_FILE = 'data/sales.db'
+def get_data_dir():
+    """Get the appropriate data directory for the database"""
+    if getattr(sys, 'frozen', False):
+        if sys.platform.startswith('win'):
+            data_dir = os.path.join(os.path.expanduser('~'), 'AppData', 'Local', 'SalesApp')
+        else:
+            data_dir = os.path.join(os.path.expanduser('~'), '.salesapp')
+    else:
+        data_dir = 'data'
+    
+    return data_dir
+
+DATA_DIR = get_data_dir()
+DB_FILE = os.path.join(DATA_DIR, 'sales.db')
+
 
 class Database:
     def __init__(self):
