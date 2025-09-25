@@ -26,8 +26,7 @@ class MainApp(tk.Tk):
         self.show_login_window()  
          
     def show_login_window(self):
-        log_win = LoginWindow(auth_service = self.auth_service, on_login_success = self.on_login_success)
-        log_win.mainloop()
+        self.log_win = LoginWindow(auth_service = self.auth_service, on_login_success = self.on_login_success)
 
 
     def on_login_success(self,user):
@@ -35,9 +34,9 @@ class MainApp(tk.Tk):
         self.show_dashboard_window()
 
     def show_dashboard_window(self):
-        dsh_win = DashboardWindow(user = self.user, sales_service = self.sales_service, offer_service= self.offer_service )
-        dsh_win.mainloop()
+        self.dsh_win = DashboardWindow(user = self.user, sales_service = self.sales_service, offer_service= self.offer_service )
 
 
 if __name__ == "__main__":
     app = MainApp()
+    app.mainloop()
