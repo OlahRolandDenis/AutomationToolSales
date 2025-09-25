@@ -1,5 +1,4 @@
-echo "customtkinter
+customtkinter
 CTkMessagebox
 reportlab
 bcrypt
-tkcalendar" > requirements.txt
