@@ -1,14 +1,7 @@
 import customtkinter as ctk
-from tkinter import ttk, messagebox, filedialog, Frame
+from tkinter import ttk, messagebox, filedialog
 from datetime import date, datetime, timedelta
-from models.sale import Sale
-from models.offer import Offer
-from models.offer_pos import Offer_pos
-import csv
-from tkcalendar import DateEntry
 from ui.offer_window import OfferDetailWindow
-from services.get_client_data import ClientData
-import tkinter as tk
 from reportlab.lib.pagesizes import A4
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle

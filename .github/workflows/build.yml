@@ -36,12 +36,12 @@ jobs:
     - name: Build Windows executable
       if: matrix.os == 'windows-latest'
       run: |
-        pyinstaller --onefile --windowed --name=SalesApp --add-data="utils/logo.png;utils" --hidden-import=customtkinter --hidden-import=CTkMessagebox --hidden-import=reportlab --hidden-import=bcrypt --hidden-import=sqlite3 main.py
+        pyinstaller --onefile --windowed --name=SalesApp --add-data="utils/logo.png;utils" --hidden-import=customtkinter --hidden-import=reportlab --hidden-import=bcrypt --hidden-import=sqlite3 --collect-all=customtkinter --collect-all=reportlab main.py
         
-    - name: Build macOS executable  
+    - name: Build macOS executable
       if: matrix.os == 'macos-latest'
       run: |
-        pyinstaller --onefile --windowed --name=SalesApp --add-data="utils/logo.png:utils" --hidden-import=customtkinter --hidden-import=CTkMessagebox --hidden-import=reportlab --hidden-import=bcrypt --hidden-import=sqlite3 main.py
+        pyinstaller --onefile --windowed --name=SalesApp --add-data="utils/logo.png:utils" --hidden-import=customtkinter --hidden-import=reportlab --hidden-import=bcrypt --hidden-import=sqlite3 --collect-all=customtkinter --collect-all=reportlab main.py
         
     - name: Upload Windows artifact
       if: matrix.os == 'windows-latest'
@@ -51,7 +51,7 @@ jobs:
         path: dist/SalesApp.exe
         
     - name: Upload macOS artifact
-      if: matrix.os == 'macos-latest' 
+      if: matrix.os == 'macos-latest'
       uses: actions/upload-artifact@v4
       with:
         name: SalesApp-macOS
@@ -65,5 +65,7 @@ jobs:
         name: Release v1.0.${{ github.run_number }}
         draft: false
         prerelease: false
+        files: |
+          dist/SalesApp.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
