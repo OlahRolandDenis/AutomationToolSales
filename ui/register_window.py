@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from tkinter import messagebox
+from CTkMessagebox import CTkMessagebox
 
 class RegistrationWindow(ctk.CTk):
     def __init__(self, auth_service, parent_window, on_registration_success=None):
@@ -77,25 +77,24 @@ class RegistrationWindow(ctk.CTk):
         confirm_password = self.confirm_password_entry.get()
 
         if not username :
-            messagebox.showerror("Error", "Please enter username.")
+            CTkMessagebox(title="Error", message="Please enter username.")
             return
         if not password :
-            messagebox.showerror("Error", "Please enter password.")
+            CTkMessagebox(title="Error", message="Please enter password.")
             return
         if not confirm_password :
-            messagebox.showerror("Error", "Please enter confirm password.")
+            CTkMessagebox(title="Error", message="Please enter confirm password.")
             return
         if password != confirm_password:
-            messagebox.showerror("Error", "Passwords doesn't match.")
+            CTkMessagebox(title="Error", message="Passwords doesn't match.")
             return
         
         status = self.auth_service.register_user(username, password, False)
 
         if status == False:
-            messagebox.showerror("Error", "Registration failed. Username may already exist.")
+           CTkMessagebox(title="Error", message="Registration failed. Username may already exist.")
         else:
-            messagebox.showinfo("Success", "Registration successful! You can now log in.")
-            self.parent_window.deiconify()
+            CTkMessagebox(title="Success", message="Registration successful! You can now log in.")
             self.destroy()
         
         
