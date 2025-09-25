@@ -1,3 +1,6 @@
 customtkinter==5.2.2
+CTkMessagebox
 reportlab==4.0.4
 bcrypt==4.1.2
+pyinstaller
+Pillow
