@@ -1,6 +1,5 @@
 import PyInstaller.__main__
 import os
-import sys
 
 # Get the project root (parent of build directory)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -20,6 +19,8 @@ build_args = [
     '--clean',
     '--noconfirm',
     f'--add-data={logo_path}:utils',  # Colon for Mac/Linux, semicolon for Windows
+    '--add-data="database/connection.db;database"',
+
     
     # GUI Libraries
     '--hidden-import=customtkinter',
@@ -82,10 +83,17 @@ build_args = [
     '--hidden-import=ui.dashboard_window',
     '--hidden-import=ui.offer_window',
     
+
+
+    
     # Collect all files from these packages
     '--collect-all=customtkinter',
+    '--collect-all=tkinter',
     '--collect-all=reportlab',
     '--collect-all=bcrypt',
+    '--collect-submodules=database',
+    '--collect-submodules=services',
+    '--collect-submodules=ui',
     
     # Add the main script
     main_path
