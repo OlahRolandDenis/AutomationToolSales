@@ -64,7 +64,7 @@ class LoginWindow(ctk.CTk):
                 self.destroy()
 
     def handle_register(self):
-        self.withdraw()
+        #self.withdraw()
         registration_window = RegistrationWindow(self.auth_service, self)
         registration_window.grab_set()
 
