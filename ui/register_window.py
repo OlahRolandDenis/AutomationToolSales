@@ -77,25 +77,25 @@ class RegistrationWindow(ctk.CTk):
         confirm_password = self.confirm_password_entry.get()
 
         if not username :
-            messagebox.showerror("Error", message="Please enter username.")
+            messagebox.showerror("Error", "Please enter username.")
             return
         if not password :
-            messagebox.showerror("Error", message="Please enter password.")
+            messagebox.showerror("Error", "Please enter password.")
             return
         if not confirm_password :
-            messagebox.showerror("Error", message="Please enter confirm password.")
+            messagebox.showerror("Error", "Please enter confirm password.")
             return
         if password != confirm_password:
-            messagebox.showerror("Error", message="Passwords doesn't match.")
+            messagebox.showerror("Error", "Passwords doesn't match.")
             return
         
         status = self.auth_service.register_user(username, password, False)
 
         if status == False:
            
-           messagebox.showerror("Error", message="Registration failed. Username may already exist.")
+           messagebox.showerror("Error", "Registration failed. Username may already exist.")
         else:
-            messagebox.showinfo("Success", message="Registration successful! You can now log in.")
+            messagebox.showinfo("Success", "Registration successful! You can now log in.")
             self.destroy()
         
         
