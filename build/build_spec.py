@@ -24,6 +24,7 @@ build_args = [
     
     # GUI Libraries
     '--hidden-import=customtkinter',
+
     '--hidden-import=tkinter',
     '--hidden-import=tkinter.ttk',
     '--hidden-import=tkinter.messagebox',
