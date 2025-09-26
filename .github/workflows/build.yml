@@ -91,13 +91,13 @@ jobs:
         
     - name: Check build output
       run: |
-        if exist dist\SalesApp.exe (
-          echo Build successful - executable found
-          dir dist
-        ) else (
-          echo Build failed - no executable found
+        if (Test-Path "dist/SalesApp.exe") {
+          Write-Host "✅ Build successful - executable found"
+          Get-ChildItem dist
+        } else {
+          Write-Error "❌ Build failed - no executable found"
           exit 1
-        )
+        }
         
     - name: Upload Windows executable
       uses: actions/upload-artifact@v4
