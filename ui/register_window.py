@@ -1,5 +1,6 @@
 import customtkinter as ctk
 from tkinter import messagebox
+from ui.login_window import LoginWindow
 
 class RegistrationWindow(ctk.CTk):
     def __init__(self, auth_service, parent_window, on_registration_success=None):
@@ -68,8 +69,12 @@ class RegistrationWindow(ctk.CTk):
         self.back_button.pack(pady=5)
     
     def handle_back(self):
-        self.parent_window.deiconify()
         self.destroy()
+        LoginWindow(
+            auth_service=self.auth_service,
+            sales_service=self.sales_service,
+            offer_service=self.offer_service
+        ).mainloop()
 
     def handle_register(self):
         username = self.username_entry.get()
@@ -97,5 +102,10 @@ class RegistrationWindow(ctk.CTk):
         else:
             messagebox.showinfo("Success", "Registration successful! You can now log in.")
             self.destroy()
+            LoginWindow(
+                auth_service=self.auth_service,
+                sales_service=self.sales_service,
+                offer_service=self.offer_service
+            ).mainloop()
         
         
