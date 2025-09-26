@@ -1,5 +1,5 @@
 from database.connection import Database
-from datetime import datetime,date 
+from datetime import datetime 
 import sqlite3
 from models.sale import Sale
 

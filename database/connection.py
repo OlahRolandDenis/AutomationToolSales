@@ -20,7 +20,13 @@ DB_FILE = os.path.join(DATA_DIR, 'sales.db')
 
 class Database:
     def __init__(self):
-        os.makedirs(os.path.dirname(DB_FILE), exist_ok=True) 
+        try:
+            os.makedirs(DATA_DIR, exist_ok=True)
+        except PermissionError:
+            fallback_dir = os.path.join(os.path.expanduser('~'), 'SalesApp')
+            os.makedirs(fallback_dir, exist_ok=True)
+            global DB_FILE
+            DB_FILE = os.path.join(fallback_dir, 'sales.db') 
         self.con =  sqlite3.connect(DB_FILE)
         self.con.execute("PRAGMA foreign_keys = ON;")
         self.create_tables()

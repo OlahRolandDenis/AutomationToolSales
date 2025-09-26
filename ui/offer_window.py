@@ -9,6 +9,7 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 import os
 import random
+from utils.resource_path import resource_path
 
 class OfferDetailWindow(ctk.CTkToplevel):
     def __init__(self, parent, offer, offer_service):
@@ -554,7 +555,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
             ]
 
             # === HEADER DREAPTA (logo + info) - folosind ID-ul ofertei ===
-            logo_path = "utils/logo.png"
+            logo_path = resource_path("utils/logo.png")
             logo = Image(logo_path, width=7*cm, height=3.2*cm)
 
             header_right = [
@@ -714,7 +715,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
             ]
 
             # === HEADER DREAPTA (logo + info) ===
-            logo_path = "utils/logo.png"
+            logo_path = resource_path("utils/logo.png")
             
             # Check if logo exists, if not create placeholder
             if os.path.exists(logo_path):

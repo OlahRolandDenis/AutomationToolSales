@@ -1,7 +1,6 @@
 import customtkinter as ctk
 from ui.register_window import RegistrationWindow
-from CTkMessagebox import CTkMessagebox
-
+from tkinter import messagebox
 class LoginWindow(ctk.CTk):
     def __init__(self, auth_service, on_login_success):
         super().__init__()
@@ -51,20 +50,20 @@ class LoginWindow(ctk.CTk):
             username = self.username_entry.get()
             
             if not username:
-                ctk.CTkMessagebox.showerror("Error", "Please enter both username.")
+                messagebox.showerror("Error", "Please enter both username.")
                 return
             
             new_user = self.auth_service.login_user(username)
 
             if not new_user:
-                ctk.CTkMessagebox.showerror("Login Failed", "Invalid username.")
+                messagebox.showerror("Login Failed", "Invalid username.")
             else:
                 print("Login successful")
                 self.on_login_success(new_user)
                 self.destroy()
 
     def handle_register(self):
-        #self.withdraw()
+        self.withdraw()
         registration_window = RegistrationWindow(self.auth_service, self)
         registration_window.grab_set()
 
