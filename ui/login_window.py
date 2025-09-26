@@ -1,7 +1,6 @@
 import customtkinter as ctk
-from ui.register_window import RegistrationWindow
 from tkinter import messagebox
-from ui.dashboard_window import DashboardWindow
+
 
 class LoginWindow(ctk.CTk):
     def __init__(self, auth_service, sales_service, offer_service):
@@ -61,8 +60,10 @@ class LoginWindow(ctk.CTk):
             if not new_user:
                 messagebox.showerror("Login Failed", "Invalid username.")
             else:
+                
                 print("Login successful")
                 self.destroy()
+                from ui.dashboard_window import DashboardWindow
                 DashboardWindow(
                     user=new_user,
                     sales_service=self.sales_service,
@@ -70,7 +71,9 @@ class LoginWindow(ctk.CTk):
                 ).mainloop()
 
     def handle_register(self):
+        
         self.destroy()
+        from ui.register_window import RegistrationWindow
         RegistrationWindow(
             auth_service=self.auth_service,
             sales_service=self.sales_service,
