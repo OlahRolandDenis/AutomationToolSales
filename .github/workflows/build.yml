@@ -12,11 +12,8 @@ permissions:
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [windows-latest, macos-latest]
-        
-    runs-on: ${{ matrix.os }}
+    # 👇 instead of windows-latest, pin to windows-2022
+    runs-on: windows-2022
     
     steps:
     - name: Checkout code
@@ -25,61 +22,91 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        # 👇 safer for PyInstaller, 3.12 is recommended
+        python-version: '3.12'
         
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
+        pip install pyinstaller
         
-    - name: Build Windows executable
-      if: matrix.os == 'windows-latest'
+    - name: Create build script
       run: |
-        pyinstaller ^
-          --onefile ^
-          --windowed ^
-          --name=SalesApp ^
-          --hidden-import=customtkinter ^
-          --hidden-import=tkinter ^
-          --hidden-import=tkinter.messagebox ^
-          --hidden-import=sqlite3 ^
-          --hidden-import=bcrypt ^
-          --hidden-import=reportlab ^
-          --collect-all=customtkinter ^
-          main.py
+        echo "import PyInstaller.__main__" > build_github.py
+        echo "import os" >> build_github.py
+        echo "import sys" >> build_github.py
+        echo "" >> build_github.py
+        echo "# Path to main.py" >> build_github.py
+        echo "main_path = 'main.py'" >> build_github.py
+        echo "" >> build_github.py
+        echo "build_args = [" >> build_github.py
+        echo "    '--name=SalesApp'," >> build_github.py
+        echo "    '--onefile'," >> build_github.py
+        echo "    '--console'," >> build_github.py
+        echo "    '--clean'," >> build_github.py
+        echo "    '--noconfirm'," >> build_github.py
+        echo "    '--hidden-import=customtkinter'," >> build_github.py
+        echo "    '--hidden-import=tkinter'," >> build_github.py
+        echo "    '--hidden-import=tkinter.ttk'," >> build_github.py
+        echo "    '--hidden-import=tkinter.messagebox'," >> build_github.py
+        echo "    '--hidden-import=tkinter.filedialog'," >> build_github.py
+        echo "    '--hidden-import=sqlite3'," >> build_github.py
+        echo "    '--hidden-import=bcrypt'," >> build_github.py
+        echo "    '--hidden-import=bcrypt._bcrypt'," >> build_github.py
+        echo "    '--hidden-import=datetime'," >> build_github.py
+        echo "    '--hidden-import=reportlab'," >> build_github.py
+        echo "    '--hidden-import=reportlab.lib'," >> build_github.py
+        echo "    '--hidden-import=reportlab.lib.pagesizes'," >> build_github.py
+        echo "    '--hidden-import=reportlab.lib.styles'," >> build_github.py
+        echo "    '--hidden-import=reportlab.platypus'," >> build_github.py
+        echo "    '--hidden-import=os'," >> build_github.py
+        echo "    '--hidden-import=sys'," >> build_github.py
+        echo "    '--hidden-import=database.connection'," >> build_github.py
+        echo "    '--hidden-import=services.auth_service'," >> build_github.py
+        echo "    '--hidden-import=services.sales_service'," >> build_github.py
+        echo "    '--hidden-import=services.offer_service'," >> build_github.py
+        echo "    '--hidden-import=ui.login_window'," >> build_github.py
+        echo "    '--hidden-import=ui.dashboard_window'," >> build_github.py
+        echo "    '--collect-all=customtkinter'," >> build_github.py
+        echo "    '--collect-submodules=database'," >> build_github.py
+        echo "    '--collect-submodules=services'," >> build_github.py
+        echo "    '--collect-submodules=ui'," >> build_github.py
+        echo "    main_path" >> build_github.py
+        echo "]" >> build_github.py
+        echo "" >> build_github.py
+        echo "print('Building executable with PyInstaller...')" >> build_github.py
+        echo "try:" >> build_github.py
+        echo "    PyInstaller.__main__.run(build_args)" >> build_github.py
+        echo "    print('Build completed successfully!')" >> build_github.py
+        echo "    print('Executable should be in the dist folder')" >> build_github.py
+        echo "except Exception as e:" >> build_github.py
+        echo "    print(f'Build failed: {e}')" >> build_github.py
+        echo "    import traceback" >> build_github.py
+        echo "    traceback.print_exc()" >> build_github.py
+        echo "    sys.exit(1)" >> build_github.py
         
-    - name: Build macOS executable
-      if: matrix.os == 'macos-latest'
+    - name: Run build script
+      run: python build_github.py
+        
+    - name: Check build output
       run: |
-        pyinstaller \
-          --onefile \
-          --windowed \
-          --name=SalesApp \
-          --hidden-import=customtkinter \
-          --hidden-import=tkinter \
-          --hidden-import=tkinter.messagebox \
-          --hidden-import=sqlite3 \
-          --hidden-import=bcrypt \
-          --hidden-import=reportlab \
-          --collect-all=customtkinter \
-          main.py
+        if exist dist\SalesApp.exe (
+          echo Build successful - executable found
+          dir dist
+        ) else (
+          echo Build failed - no executable found
+          exit 1
+        )
         
-    - name: Upload Windows artifact
-      if: matrix.os == 'windows-latest'
+    - name: Upload Windows executable
       uses: actions/upload-artifact@v4
       with:
         name: SalesApp-Windows
         path: dist/SalesApp.exe
         
-    - name: Upload macOS artifact
-      if: matrix.os == 'macos-latest'
-      uses: actions/upload-artifact@v4
-      with:
-        name: SalesApp-macOS
-        path: dist/SalesApp
-        
     - name: Create Release
-      if: github.event_name == 'push' && matrix.os == 'windows-latest'
+      if: github.event_name == 'push'
       uses: softprops/action-gh-release@v2
       with:
         tag_name: v1.0.${{ github.run_number }}
