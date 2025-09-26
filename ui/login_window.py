@@ -76,8 +76,6 @@ class LoginWindow(ctk.CTk):
         from ui.register_window import RegistrationWindow
         RegistrationWindow(
             auth_service=self.auth_service,
-            sales_service=self.sales_service,
-            offer_service=self.offer_service
         ).mainloop()
 
 

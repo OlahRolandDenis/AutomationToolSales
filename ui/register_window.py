@@ -3,11 +3,9 @@ from tkinter import messagebox
 
 
 class RegistrationWindow(ctk.CTk):
-    def __init__(self, auth_service, parent_window, on_registration_success=None):
+    def __init__(self, auth_service):
         super().__init__()
-        self.parent_window = parent_window
         self.auth_service = auth_service
-        self.on_registration_success = on_registration_success
         self.title("Register")
         self.geometry("400x350")
         self.configure(fg_color="#ffffff")
