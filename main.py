@@ -27,14 +27,12 @@ class MainApp(tk.Tk):
          
     def show_login_window(self):
         self.withdraw()
-        log_win = LoginWindow(auth_service = self.auth_service, on_login_success = self.on_login_success)
+        self.login_window = LoginWindow(auth_service = self.auth_service, on_login_success = self.on_login_success)
         #log_win.mainloop()
 
 
     def on_login_success(self,user):
         self.user = user
-        self.show_dashboard_window()
-
         if self.login_window:
             self.login_window.destroy()
         self.deiconify()
@@ -48,3 +46,4 @@ class MainApp(tk.Tk):
 
 if __name__ == "__main__":
     app = MainApp()
+    app.mainloop()
