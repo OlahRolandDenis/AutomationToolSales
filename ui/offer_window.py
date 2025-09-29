@@ -556,6 +556,13 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
             # === HEADER DREAPTA (logo + info) - folosind ID-ul ofertei ===
             logo_path = resource_path("utils/logo.png")
+
+            if os.path.exists(logo_path):
+                logo = Image(logo_path, width=7*cm, height=3.2*cm)
+            else:
+                # Create a placeholder if logo doesn't exist
+                logo = Paragraph("<b>[LOGO]</b>", ParagraphStyle('LogoPlaceholder', fontSize=14, alignment=TA_CENTER))
+            
             print(f"Logo path: {logo_path}")
             print(f"Logo exists: {os.path.exists(logo_path)}")
             print(f"Current directory: {os.getcwd()}")
@@ -687,7 +694,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
             # Create temporary file path
             import tempfile
             import subprocess
-            import sys
             import platform
             
             # Generate temporary PDF file

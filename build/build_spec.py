@@ -1,5 +1,6 @@
 import PyInstaller.__main__
 import os
+from utils.resource_path import resource_path
 
 # Get the project root (parent of build directory)
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -9,7 +10,7 @@ project_root = os.path.dirname(current_dir)  # Go up one level from build folder
 logo_path = os.path.join(project_root, 'utils', 'logo.png')
 
 # Path to main.py
-main_path = os.path.join(project_root, 'main.py')
+main_path = resource_path("utils/logo.png")
 
 # Build arguments with ALL dependencies
 build_args = [
