@@ -9,6 +9,15 @@ project_root = os.path.dirname(current_dir)  # Go up one level from build folder
 # Path to logo file
 logo_path = os.path.join(project_root, "utils", "logo.png")
 
+if not os.path.exists(logo_path):
+    print(f"❌ ERROR: Logo not found at: {logo_path}")
+    print(f"Current directory: {os.getcwd()}")
+    print(f"Project root: {project_root}")
+    print("\nPlease ensure utils/logo.png exists in your project!")
+    sys.exit(1)
+else:
+    print(f"✅ Logo found at: {logo_path}")
+
 # Path to main.py
 main_path = os.path.join(project_root, "main.py")
 

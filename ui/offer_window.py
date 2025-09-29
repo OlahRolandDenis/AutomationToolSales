@@ -24,7 +24,6 @@ class OfferDetailWindow(ctk.CTkToplevel):
         
         self.colors = parent.colors
         
-        # Company data (you should replace this with your actual company data)
         self.company_data = {
             'name': 'SC AUTO & AGRO MAGMANN SRL',
             'registration_number': 'Nr.ord.reg.com.: 02/52/21/2014',

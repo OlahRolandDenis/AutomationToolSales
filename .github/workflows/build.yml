@@ -12,7 +12,6 @@ permissions:
 
 jobs:
   build:
-    # 👇 instead of windows-latest, pin to windows-2022
     runs-on: windows-2022
     
     steps:
@@ -22,7 +21,6 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        # 👇 safer for PyInstaller, 3.12 is recommended
         python-version: '3.12'
         
     - name: Install dependencies
