@@ -1,16 +1,18 @@
 import PyInstaller.__main__
 import os
-from utils.resource_path import resource_path
+import sys
 
 # Get the project root (parent of build directory)
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)  # Go up one level from build folder
 
 # Path to logo file
-logo_path = resource_path(os.path.join("utils", "logo.png"))
+logo_path = os.path.join(project_root, "utils", "logo.png")
 
 # Path to main.py
 main_path = os.path.join(project_root, "main.py")
+
+separator = ';' if sys.platform == 'win32' else ':'
 
 # Build arguments with ALL dependencies
 build_args = [
@@ -19,7 +21,7 @@ build_args = [
     '--console',
     '--clean',
     '--noconfirm',
-    f'--add-data={logo_path};utils',  # Colon for Mac/Linux, semicolon for Windows
+    f'--add-data={logo_path}{separator}utils',
     '--add-data="database/connection.db;database"',
 
     
@@ -83,6 +85,7 @@ build_args = [
     '--hidden-import=ui.login_window',
     '--hidden-import=ui.dashboard_window',
     '--hidden-import=ui.offer_window',
+    '--hidden-import=utils.resource_path',
     
 
 
