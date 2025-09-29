@@ -35,8 +35,18 @@ jobs:
         echo "import os" >> build_github.py
         echo "import sys" >> build_github.py
         echo "" >> build_github.py
-        echo "# Path to main.py" >> build_github.py
+        echo "current_dir = os.path.dirname(os.path.abspath(__file__))" >> build_github.py
+        echo "project_root = current_dir" >> build_github.py
+        echo "logo_path = os.path.join(project_root, 'utils', 'logo.png')" >> build_github.py
         echo "main_path = 'main.py'" >> build_github.py
+        echo "" >> build_github.py
+        echo "if not os.path.exists(logo_path):" >> build_github.py
+        echo "    print(f'ERROR: Logo not found at {logo_path}')" >> build_github.py
+        echo "    sys.exit(1)" >> build_github.py
+        echo "else:" >> build_github.py
+        echo "    print(f'Logo found at: {logo_path}')" >> build_github.py
+        echo "" >> build_github.py
+        echo "separator = ';' if sys.platform == 'win32' else ':'" >> build_github.py
         echo "" >> build_github.py
         echo "build_args = [" >> build_github.py
         echo "    '--name=SalesApp'," >> build_github.py
@@ -44,6 +54,7 @@ jobs:
         echo "    '--console'," >> build_github.py
         echo "    '--clean'," >> build_github.py
         echo "    '--noconfirm'," >> build_github.py
+        echo "    f'--add-data={logo_path}{separator}utils'," >> build_github.py
         echo "    '--hidden-import=customtkinter'," >> build_github.py
         echo "    '--hidden-import=tkinter'," >> build_github.py
         echo "    '--hidden-import=tkinter.ttk'," >> build_github.py
@@ -57,23 +68,44 @@ jobs:
         echo "    '--hidden-import=reportlab.lib'," >> build_github.py
         echo "    '--hidden-import=reportlab.lib.pagesizes'," >> build_github.py
         echo "    '--hidden-import=reportlab.lib.styles'," >> build_github.py
+        echo "    '--hidden-import=reportlab.lib.units'," >> build_github.py
+        echo "    '--hidden-import=reportlab.lib.colors'," >> build_github.py
+        echo "    '--hidden-import=reportlab.lib.enums'," >> build_github.py
         echo "    '--hidden-import=reportlab.platypus'," >> build_github.py
         echo "    '--hidden-import=os'," >> build_github.py
         echo "    '--hidden-import=sys'," >> build_github.py
+        echo "    '--hidden-import=random'," >> build_github.py
+        echo "    '--hidden-import=tempfile'," >> build_github.py
+        echo "    '--hidden-import=subprocess'," >> build_github.py
+        echo "    '--hidden-import=platform'," >> build_github.py
+        echo "    '--hidden-import=database'," >> build_github.py
         echo "    '--hidden-import=database.connection'," >> build_github.py
+        echo "    '--hidden-import=services'," >> build_github.py
         echo "    '--hidden-import=services.auth_service'," >> build_github.py
         echo "    '--hidden-import=services.sales_service'," >> build_github.py
         echo "    '--hidden-import=services.offer_service'," >> build_github.py
+        echo "    '--hidden-import=models'," >> build_github.py
+        echo "    '--hidden-import=models.user'," >> build_github.py
+        echo "    '--hidden-import=models.sale'," >> build_github.py
+        echo "    '--hidden-import=models.offer'," >> build_github.py
+        echo "    '--hidden-import=ui'," >> build_github.py
         echo "    '--hidden-import=ui.login_window'," >> build_github.py
         echo "    '--hidden-import=ui.dashboard_window'," >> build_github.py
+        echo "    '--hidden-import=ui.offer_window'," >> build_github.py
+        echo "    '--hidden-import=utils'," >> build_github.py
+        echo "    '--hidden-import=utils.resource_path'," >> build_github.py
         echo "    '--collect-all=customtkinter'," >> build_github.py
+        echo "    '--collect-all=reportlab'," >> build_github.py
         echo "    '--collect-submodules=database'," >> build_github.py
         echo "    '--collect-submodules=services'," >> build_github.py
         echo "    '--collect-submodules=ui'," >> build_github.py
+        echo "    '--collect-submodules=utils'," >> build_github.py
         echo "    main_path" >> build_github.py
         echo "]" >> build_github.py
         echo "" >> build_github.py
         echo "print('Building executable with PyInstaller...')" >> build_github.py
+        echo "print(f'Logo path: {logo_path}')" >> build_github.py
+        echo "print(f'Separator: {separator}')" >> build_github.py
         echo "try:" >> build_github.py
         echo "    PyInstaller.__main__.run(build_args)" >> build_github.py
         echo "    print('Build completed successfully!')" >> build_github.py
@@ -90,10 +122,10 @@ jobs:
     - name: Check build output
       run: |
         if (Test-Path "dist/SalesApp.exe") {
-          Write-Host "✅ Build successful - executable found"
+          Write-Host "Build successful - executable found"
           Get-ChildItem dist
         } else {
-          Write-Error "❌ Build failed - no executable found"
+          Write-Error "Build failed - no executable found"
           exit 1
         }
         
