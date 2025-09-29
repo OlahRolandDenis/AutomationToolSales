@@ -556,6 +556,9 @@ class OfferDetailWindow(ctk.CTkToplevel):
 
             # === HEADER DREAPTA (logo + info) - folosind ID-ul ofertei ===
             logo_path = resource_path("utils/logo.png")
+            print(f"Logo path: {logo_path}")
+            print(f"Logo exists: {os.path.exists(logo_path)}")
+            print(f"Current directory: {os.getcwd()}")
             logo = Image(logo_path, width=7*cm, height=3.2*cm)
 
             header_right = [

@@ -18,7 +18,7 @@ build_args = [
     '--console',
     '--clean',
     '--noconfirm',
-    f'--add-data={logo_path}:utils',  # Colon for Mac/Linux, semicolon for Windows
+    f'--add-data={logo_path};utils',  # Colon for Mac/Linux, semicolon for Windows
     '--add-data="database/connection.db;database"',
 
     
