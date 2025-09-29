@@ -354,6 +354,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
             if success:
                 
                 messagebox.showinfo("Success", "Product added")
+                self.clear_form()
                 self.reload_offer()
                 self.load_offer_data()
                 self.parent_window.load_saved_offers()
@@ -426,6 +427,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
             if success:
 
                 messagebox.showinfo("Success", "Product updated")
+                self.clear_form()
                 self.reload_offer()
                 self.load_offer_data()
                 self.parent_window.load_saved_offers()
@@ -566,7 +568,7 @@ class OfferDetailWindow(ctk.CTkToplevel):
             print(f"Logo path: {logo_path}")
             print(f"Logo exists: {os.path.exists(logo_path)}")
             print(f"Current directory: {os.getcwd()}")
-            logo = Image(logo_path, width=7*cm, height=3.2*cm)
+            
 
             header_right = [
                 [logo],

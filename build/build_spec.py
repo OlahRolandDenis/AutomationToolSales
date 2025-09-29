@@ -7,10 +7,10 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)  # Go up one level from build folder
 
 # Path to logo file
-logo_path = os.path.join(project_root, 'utils', 'logo.png')
+logo_path = resource_path("utils/logo.png")
 
 # Path to main.py
-main_path = resource_path("utils/logo.png")
+main_path = os.path.join(project_root, "main.py")
 
 # Build arguments with ALL dependencies
 build_args = [
