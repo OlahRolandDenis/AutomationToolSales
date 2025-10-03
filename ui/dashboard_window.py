@@ -872,6 +872,7 @@ class DashboardWindow(ctk.CTk):
             quantity = float(qty_str)
             unit_price = float(price_str)
             vat = float(vat_str)
+            unit_price = unit_price / (1 + vat/100)
         except ValueError:
             messagebox.showerror("Error", "Invalid Format")
             return
